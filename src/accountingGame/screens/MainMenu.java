@@ -5,16 +5,16 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
+import accountingGame.AccountManager;
+
 import com.golden.gamedev.GameEngine;
 import com.golden.gamedev.GameObject;
-import com.golden.gamedev.engine.input.AWTInput;
 import com.golden.gamedev.gui.TButton;
-import com.golden.gamedev.gui.TPanel;
+import com.golden.gamedev.gui.TPasswordField;
 import com.golden.gamedev.gui.TTextField;
 import com.golden.gamedev.gui.toolkit.FrameWork;
 import com.golden.gamedev.object.Sprite;
 import com.golden.gamedev.object.SpriteGroup;
-import com.sun.media.jfxmedia.events.NewFrameEvent;
 
 public class MainMenu extends GameObject {
 	int buttonPositionY = 500;
@@ -23,17 +23,17 @@ public class MainMenu extends GameObject {
 	userCredentialsForm, signUpPopUp;
 	Sprite logIn, signUp, exit, userCredentials,signUpScreen;
 	
-	TTextField username,password;
+	TTextField username;
+	TPasswordField password;
 	TButton logInButton, signUpButton, exitButton,signUpScreenExit;
 	FrameWork frame, userpassField;
 	
 	private SpriteGroup UI_POPUPS;
+	private AccountManager accountManager;
 	
 	
 	
 
-
-	
 	public MainMenu(GameEngine gameEngine) {
 		super(gameEngine);
 		
@@ -51,7 +51,7 @@ public class MainMenu extends GameObject {
 		
 		userpassField = new FrameWork(bsInput,500,500);
 		username = new TTextField("",419,256,414,41);
-		password = new TTextField("",419,321,415,45);
+		password = new TPasswordField("",419,321,415,45);
 		userpassField.add(username);
 		userpassField.add(password);
 		
@@ -62,13 +62,12 @@ public class MainMenu extends GameObject {
 		//exitButton1 = getImage("images/Button_Exit_Neutral.png");
 		newGameButtonHighlight = getImage("images/Button_LogIn_Clicked.png");
 		loadGameButtonHighlight = getImage("images/Button_SignUp_Clicked.png");
-		exitButtonHighlight = getImage("images/Button_Exit_Clicked.png");
 		logIn = new Sprite(logInButton1,90,500);
 		signUp = new Sprite(signUpButton1,500,500);
-		//exit = new Sprite(exitButton1,buttonPositionX,550);
+
 		logInButtonRectangle = new Rectangle(90,buttonPositionY,409,122);
 		signUpButtonRectangle =new Rectangle(500,buttonPositionY,409,122);
-		//exitButtonRectangle = new Rectangle(buttonPositionX,550,409,122);
+
 		
 		userCredentialsForm = getImage("images/UI_UserCredentials.png");
 		userCredentials = new Sprite(userCredentialsForm,110,200);
@@ -82,6 +81,9 @@ public class MainMenu extends GameObject {
 		
 		UI_POPUPS = new SpriteGroup("Popup");
 		UI_POPUPS.add(signUpScreen);
+		
+		accountManager = new AccountManager();
+		
 	}
 	
 	@Override
@@ -90,7 +92,7 @@ public class MainMenu extends GameObject {
 		//changeScreen();
         logIn.update(elapsedTime);
         signUp.update(elapsedTime);
-        //exit.update(elapsedTime);
+
 		switchScreen();
         frame.update();
         userCredentials.update(elapsedTime);
@@ -106,7 +108,7 @@ public class MainMenu extends GameObject {
 		//g.drawImage(backgroundOverlay,null,0,0);
         logIn.render(g);
         signUp.render(g);
-        //exit.render(g);
+
         showClosePopUp(g);
         userCredentials.render(g);
         userpassField.render(g);
@@ -118,18 +120,25 @@ public class MainMenu extends GameObject {
 	{
             if(logInButton.isMousePressed())
             {
-                parent.nextGameID = 1;
-                finish();
+            	
+            	parent.nextGameID = 1;
+        		finish();
+            	/*accountManager.setPlayerUsername(username.getText());
+            	accountManager.setPlayerPassword((org.apache.commons.codec.digest.DigestUtils.sha256Hex(password.getPasswordText())));
+            	accountManager.checkLogIn();
+            	System.out.println(org.apache.commons.codec.digest.DigestUtils.sha256Hex(password.getPasswordText()));
+            	if (accountManager.isUserPassMatched())
+            	{
+            		parent.nextGameID = 1;
+            		finish();
+            	}*/
+                
             }
             if(signUpButton.isMousePressed())
             {
                signUpScreen.setActive(true);
                
             }
-            /*if(exitButton.isMousePressed())
-            {
-                System.exit(0);
-            }*/
 	}
 	
 	private void highlightButton() {
@@ -138,19 +147,18 @@ public class MainMenu extends GameObject {
         {
             logIn.setImage(newGameButtonHighlight);
             signUp.setImage(signUpButton1);
-           //exit.setImage(exitButton1);
         }
         else if(signUpButtonRectangle.contains(p))
         {
         	logIn.setImage(logInButton1);
             signUp.setImage(loadGameButtonHighlight);
-            //exit.setImage(exitButton1);
+
         }
         else
         {
         	logIn.setImage(logInButton1);
             signUp.setImage(signUpButton1);
-            //exit.setImage(exitButton1);
+
         }
 	}
 	

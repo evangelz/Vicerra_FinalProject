@@ -27,9 +27,9 @@ public class Bakery extends GameObject {
 	Rectangle exitPopUpYesButtonRectangle, exitPopUpNoButtonRectangle;
 	Rectangle profileButtonRectangle, questButtonRectangle, notesButtonRectangle,referenceButtonRectangle, exitButtonRectangle, questBoardRectangle;
 	BufferedImage questButton, questButtonHighlight, notesButton, notesButtonHighlight,exitButton, exitButtonHighlight;
-	BufferedImage questPopUp, notesPopUp,exitPopUp;
+	BufferedImage questPopUp, notesPopUp,exitPopUp, dialogueBox;
 	BufferedImage exitPopUpYesButton, exitPopUpNoButton, exitPopUpNoButtonHighlight, exitPopUpYesButtonHighlight;
-	Sprite questScreen, notesScreen, exitScreen,uiTray;
+	Sprite questScreen, notesScreen, exitScreen,uiTray, dialogueTray;
 	Sprite questExit,notesExit, exitYes, exitNo;
 	Sprite quest,notes,exit;
 	
@@ -93,19 +93,25 @@ public class Bakery extends GameObject {
 		frame.add(notesScreenExit);
 		notesScreenExit.setVisible(false);
 		
-		exitPopUp = getImage("");
-		exitScreen = new Sprite(exitPopUp,0,0);
-		exitPopUpYesButton = getImage("");
-		exitPopUpYesButtonHighlight = getImage("");
-		exitPopUpNoButton = getImage("");
-		exitPopUpNoButtonHighlight=getImage("");
-		exitYes = new Sprite(exitPopUpYesButton,0,0);
-		exitNo = new Sprite(exitPopUpNoButton,0,0);
-		exitPopUpYesButtonRectangle = new Rectangle(0,0,0,0);
-		exitPopUpNoButtonRectangle = new Rectangle(0,0,0,0);
+		exitPopUp = getImage("images/PopupWindow_LogOut.png");
+		exitScreen = new Sprite(exitPopUp,100,0);
+		exitPopUpYesButton = getImage("images/Button_Yes_Neutral.png");
+		exitPopUpYesButtonHighlight = getImage("images/Button_Yes_Clicked.png");
+		exitPopUpNoButton = getImage("images/Button_No_Neutral.png");
+		exitPopUpNoButtonHighlight=getImage("images/Button_No_Clicked.png");
+		exitYes = new Sprite(exitPopUpYesButton,330,350);
+		exitNo = new Sprite(exitPopUpNoButton,520,350);
+		exitPopUpYesButtonRectangle = new Rectangle(330,350,180,60);
+		exitPopUpNoButtonRectangle = new Rectangle(520,350,180,60);
 		exitScreen.setActive(false);
 		exitYes.setActive(false);
 		exitNo.setActive(false);
+		
+		dialogueBox = getImage("images/DialogueBox.png");
+		dialogueTray = new Sprite(dialogueBox,0,600);
+		dialogueTray.setActive(false);
+		
+		
 		//questBox = new Rectangle(320,240,0,0);
 		
 		/*
@@ -136,6 +142,7 @@ public class Bakery extends GameObject {
 		UI_POPUPS.add(questScreen);
 		UI_POPUPS.add(notesScreen);
 		UI_POPUPS.add(exitScreen);
+		UI_POPUPS.add(dialogueTray);
 		
 		PLAYER = new SpriteGroup("Character");
 		PLAYER.add(player);
@@ -169,7 +176,6 @@ public class Bakery extends GameObject {
 		PLAYER.render(g);
 		UI_BUTTONS.render(g);
 		showClosePopUp(g);
-		UI_POPUPS.render(g);
 		
 		
 		
@@ -192,10 +198,13 @@ public class Bakery extends GameObject {
         else if(exitPopUpYesButtonRectangle.contains(p))
         {
         	exitYes.setImage(exitPopUpYesButtonHighlight);
+        	exitNo.setImage(exitPopUpNoButton);
         }
         else if(exitPopUpNoButtonRectangle.contains(p))
         {
         	exitNo.setImage(exitPopUpNoButtonHighlight);
+        	exitYes.setImage(exitPopUpYesButton);
+        
         }
         else
         {
@@ -222,31 +231,29 @@ public class Bakery extends GameObject {
 	            	notesScreen.setActive(true);
 	            	enableOrDisableMap(false);
 	            }
-	            if(exit.getImage().equals(exitButtonHighlight))
+	            else if(exitYes.getImage().equals(exitPopUpYesButtonHighlight) && exitYes.isActive())
 	            {
-	            	//showExit();
+	            	exitScreen.setActive(true);
+	            	exitYes.setActive(true);
+					exitNo.setActive(true);
 	            	enableOrDisableMap(false);
 	            }
 			}
-			/*if(click())
+			if(click())
 			{
-				if(notesExit.getImage().equals(notesExitHighlight))
-				{
-					notesScreen.setActive(false);
-					notesExit.setActive(false);
-				}
-				else if(exitNo.getImage().equals(exitPopUpNoButtonHighlight))
+				if(exitNo.getImage().equals(exitPopUpNoButtonHighlight))
 				{
 					exitScreen.setActive(false);
 					exitYes.setActive(false);
 					exitNo.setActive(false);
+					enableOrDisableMap(true);
 				}
-				else if(exitYes.getImage().equals(exitPopUpYesButtonHighlight))
+				else if(exitYes.getImage().equals(exitPopUpYesButtonHighlight) && exitYes.isActive())
 				{
 					parent.nextGameID = 0;
 					finish();
 				}
-			}*/
+			}
 			
 	}
 	
@@ -263,6 +270,11 @@ public class Bakery extends GameObject {
 			notesScreenExit.setVisible(false);
 			enableOrDisableMap(true);
 		}
+		if(click() && dialogueTray.isActive())
+		{
+			dialogueTray.setActive(false);
+			enableOrDisableMap(true);
+		}
 		
 	}
 	
@@ -272,12 +284,18 @@ public class Bakery extends GameObject {
 		{
 			questScreenExit.setVisible(true);
 			questScreenExit.render(g);
-
+			questScreen.render(g);
 		}
 		if(notesScreen.isActive())
 		{
 			notesScreenExit.setVisible(true);
 			notesScreenExit.render(g);
+			notesScreen.render(g);
+		
+		}
+		if(dialogueTray.isActive())
+		{
+			UI_POPUPS.render(g);
 		}
 		if(exitScreen.isActive())
 		{
@@ -285,6 +303,7 @@ public class Bakery extends GameObject {
 			exitYes.render(g);
 			exitNo.render(g);
 		}
+		
 	}
 
 	public void moveTo()
@@ -296,21 +315,24 @@ public class Bakery extends GameObject {
 		}
 		if(cash.isMousePressed())
 		{
-			player.setLocation(648, 110);
-
+			dialogueTray.setActive(true);
+			enableOrDisableMap(false);
 		}
 		if(cakeInventory.isMousePressed() || breadInventory.isMousePressed())
 		{
-			player.setLocation(891, 490);
+			dialogueTray.setActive(true);
+			enableOrDisableMap(false);
 		}
 		if(manager.isMousePressed())
 		{
-			player.setLocation(425, 250);
+			dialogueTray.setActive(true);
+			enableOrDisableMap(false);
 
 		}
 		if(records.isMousePressed())
 		{
-			player.setLocation(0, 0);
+			dialogueTray.setActive(true);
+			enableOrDisableMap(false);
 		}
 	}
 	

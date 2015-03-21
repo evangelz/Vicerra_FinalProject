@@ -97,16 +97,16 @@ public class Supermarket extends GameObject {
 		frame.add(notesScreenExit);
 		notesScreenExit.setVisible(false);
 		
-		exitPopUp = getImage("");
-		exitScreen = new Sprite(exitPopUp,0,0);
-		exitPopUpYesButton = getImage("");
-		exitPopUpYesButtonHighlight = getImage("");
-		exitPopUpNoButton = getImage("");
-		exitPopUpNoButtonHighlight=getImage("");
-		exitYes = new Sprite(exitPopUpYesButton,0,0);
-		exitNo = new Sprite(exitPopUpNoButton,0,0);
-		exitPopUpYesButtonRectangle = new Rectangle(0,0,0,0);
-		exitPopUpNoButtonRectangle = new Rectangle(0,0,0,0);
+		exitPopUp = getImage("images/PopupWindow_LogOut.png");
+		exitScreen = new Sprite(exitPopUp,100,0);
+		exitPopUpYesButton = getImage("images/Button_Yes_Neutral.png");
+		exitPopUpYesButtonHighlight = getImage("images/Button_Yes_Clicked.png");
+		exitPopUpNoButton = getImage("images/Button_No_Neutral.png");
+		exitPopUpNoButtonHighlight=getImage("images/Button_No_Clicked.png");
+		exitYes = new Sprite(exitPopUpYesButton,330,350);
+		exitNo = new Sprite(exitPopUpNoButton,520,350);
+		exitPopUpYesButtonRectangle = new Rectangle(330,350,180,60);
+		exitPopUpNoButtonRectangle = new Rectangle(520,350,180,60);
 		exitScreen.setActive(false);
 		exitYes.setActive(false);
 		exitNo.setActive(false);
@@ -154,7 +154,6 @@ public class Supermarket extends GameObject {
 		quest.update(elapsedTime);
 		notes.update(elapsedTime);
 		exit.update(elapsedTime);
-		
 		highlightButton();
 		popUp();
 		UI_POPUPS.update(elapsedTime);
@@ -167,14 +166,14 @@ public class Supermarket extends GameObject {
 
 	@Override
 	public void render(Graphics2D g) {
-		
+		frame.render(g);
 		town.render(g);
 		uiTray.render(g);
 		PLAYER.render(g);
 		UI_BUTTONS.render(g);
 		showClosePopUp(g);
-		UI_POPUPS.render(g);
-		frame.render(g);
+		
+		
 		
 		
 	}
@@ -196,10 +195,13 @@ public class Supermarket extends GameObject {
         else if(exitPopUpYesButtonRectangle.contains(p))
         {
         	exitYes.setImage(exitPopUpYesButtonHighlight);
+        	exitNo.setImage(exitPopUpNoButton);
         }
         else if(exitPopUpNoButtonRectangle.contains(p))
         {
         	exitNo.setImage(exitPopUpNoButtonHighlight);
+        	exitYes.setImage(exitPopUpYesButton);
+        
         }
         else
         {
@@ -228,29 +230,27 @@ public class Supermarket extends GameObject {
 	            }
 	            if(exit.getImage().equals(exitButtonHighlight))
 	            {
-	            	//showExit();
+	            	exitScreen.setActive(true);
+	            	exitYes.setActive(true);
+					exitNo.setActive(true);
 	            	enableOrDisableMap(false);
 	            }
 			}
-			/*if(click())
+			if(click())
 			{
-				if(notesExit.getImage().equals(notesExitHighlight))
-				{
-					notesScreen.setActive(false);
-					notesExit.setActive(false);
-				}
-				else if(exitNo.getImage().equals(exitPopUpNoButtonHighlight))
+				if(exitNo.getImage().equals(exitPopUpNoButtonHighlight))
 				{
 					exitScreen.setActive(false);
 					exitYes.setActive(false);
 					exitNo.setActive(false);
+					enableOrDisableMap(true);
 				}
-				else if(exitYes.getImage().equals(exitPopUpYesButtonHighlight))
+				else if(exitYes.getImage().equals(exitPopUpYesButtonHighlight) && exitYes.isActive())
 				{
 					parent.nextGameID = 0;
 					finish();
 				}
-			}*/
+			}
 			
 	}
 	
@@ -276,12 +276,14 @@ public class Supermarket extends GameObject {
 		{
 			questScreenExit.setVisible(true);
 			questScreenExit.render(g);
-
+			questScreen.render(g);
 		}
 		if(notesScreen.isActive())
 		{
 			notesScreenExit.setVisible(true);
 			notesScreenExit.render(g);
+			notesScreen.render(g);
+			
 		}
 		if(exitScreen.isActive())
 		{

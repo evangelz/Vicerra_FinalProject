@@ -1,6 +1,5 @@
 package accountingGame.sprite;
 
-import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 
@@ -11,11 +10,9 @@ import com.golden.gamedev.object.Sprite;
 
 public class PlayerSprite extends Sprite{
 	
-	
-	
 	private SkillTree skillLevel;
-	private int moveSpeed=1;
-	private QuestTemplate activeSideQuest;
+	private int questID;
+	private String playerNotes;
 	BufferedImage playerUp, playerDown, playerLeft, playerRight;
 	
 	public PlayerSprite()
@@ -41,14 +38,6 @@ public class PlayerSprite extends Sprite{
 		this.skillLevel = skillLevel;
 	}
 
-	public int getMoveSpeed() {
-		return moveSpeed;
-	}
-
-	public void setMoveSpeed(int moveSpeed) {
-		this.moveSpeed = moveSpeed;
-	}
-	
 	public void changeDirection(int key)
 	{
 		switch(key)
@@ -66,6 +55,14 @@ public class PlayerSprite extends Sprite{
 			setImage(playerRight);
 			break;
 		}
+	}
+
+	public int getQuestID() {
+		return questID;
+	}
+
+	public void setQuestID(int questID) {
+		this.questID = questID;
 	}
 
 

@@ -9,7 +9,7 @@ public class QuestItem extends Sprite{
 	
 	private boolean interactable =false;
 	private int value;
-	private HashMap<String,QuestItem> records = new HashMap();
+	private String records;
 	private String info;
 	
 	public boolean isInteractable() {
@@ -31,11 +31,13 @@ public class QuestItem extends Sprite{
 	public void setInfo(String info) {
 		this.info = info;
 	}
-	public HashMap<String,QuestItem> getRecords() {
+	public String getRecords() {
 		return records;
 	}
-	public void setRecords(HashMap<String,QuestItem> records) {
-		this.records = records;
+	public void setRecords(String string) {
+		this.records = string;
 	}
+
+
 	
 }

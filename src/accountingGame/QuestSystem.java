@@ -19,21 +19,7 @@ public class QuestSystem {
 	
 	public void matchDifficulty()
 	{
-		for(int i=0;i<player.getSkillLevel().getSkillTree().size();i++)
-		{
-			if (player.getSkillLevel().getSkillTree().get(i).isUnlocked())
-			{
-				unlockedSkill.add(player.getSkillLevel().getSkillTree().get(i).getSkillName());
-			}
-		}
-		for (int i=0;i<unlockedSkill.size();i++)
-		{
-			if(unlockedSkill.get(i).equals((questList.getCompleteQuestList().get(i).getType())))
-			{
-				//TODO: arraylist of quest available
-				questList.getAvailableQuestList().add(questList.getCompleteQuestList().remove(i));
-			}
-		}
+	
 	}
 	
 	public void generateQuestInformation()

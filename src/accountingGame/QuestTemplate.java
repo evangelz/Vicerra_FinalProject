@@ -1,16 +1,17 @@
 package accountingGame;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import accountingGame.npc.NPC;
 import accountingGame.npc.QuestItem;
 
-public abstract class QuestTemplate {
+public class QuestTemplate {
 	
 	private String answer;
 	private String requirement;
 	private String questTitle;
-	private ArrayList<QuestItem> questInformation = new ArrayList();
+	private HashMap<String, QuestItem> questInformation = new HashMap();
 	private ArrayList<NPC> npc = new ArrayList();
 	private String type;
 	
@@ -26,12 +27,7 @@ public abstract class QuestTemplate {
 	public void setRequirement(String requirement) {
 		this.requirement = requirement;
 	}
-	public ArrayList<QuestItem> getQuestInformation() {
-		return questInformation;
-	}
-	public void setQuestInformation(ArrayList<QuestItem> questInformation) {
-		this.questInformation = questInformation;
-	}
+
 	public String getType() {
 		return type;
 	}
@@ -49,6 +45,12 @@ public abstract class QuestTemplate {
 	}
 	public void setQuestTitle(String questTitle) {
 		this.questTitle = questTitle;
+	}
+	public HashMap<String, QuestItem> getQuestInformation() {
+		return questInformation;
+	}
+	public void setQuestInformation(HashMap<String, QuestItem> questInformation) {
+		this.questInformation = questInformation;
 	}
 	
 }
