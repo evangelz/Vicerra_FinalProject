@@ -172,7 +172,7 @@ public class AccountManager {
 			int update;
 			updateQuest = conn.prepareStatement("delete from active_quest where player_id = ?");
 			//updateQuest.setString(1,activeQuestID+"");
-			updateQuest.setString(2, playerID+"" );
+			updateQuest.setString(1, playerID+"" );
 			update = updateQuest.executeUpdate();
 			
 		} catch (SQLException e) {
