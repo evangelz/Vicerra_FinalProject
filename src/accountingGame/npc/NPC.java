@@ -14,11 +14,11 @@ public class NPC extends Sprite {
 		this.dialogue = dialogue;
 	}
 
-	public String getnPCName() {
+	public String getNPCName() {
 		return nPCName;
 	}
 
-	public void setnPCName(String nPCName) {
+	public void setNPCName(String nPCName) {
 		this.nPCName = nPCName;
 	}
 	

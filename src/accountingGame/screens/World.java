@@ -4,9 +4,11 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
 
+import accountingGame.AccountManager;
 import accountingGame.QuestList;
+import accountingGame.Session;
+import accountingGame.TextManager;
 import accountingGame.sprite.PlayerSprite;
 
 import com.golden.gamedev.GameEngine;
@@ -18,20 +20,19 @@ import com.golden.gamedev.object.Background;
 import com.golden.gamedev.object.GameFont;
 import com.golden.gamedev.object.Sprite;
 import com.golden.gamedev.object.SpriteGroup;
-import com.golden.gamedev.object.Timer;
 import com.golden.gamedev.object.background.ImageBackground;
 
 public class World extends GameObject {
 	
-	boolean rend = false;
-	int buttonYPosition=10;
-	int questSlotXPosition= 540;
-	int questSlotYPosition=170;
-	int questTitleXPosition = 670;
-	int questTitleYPosition = 185;
-	int questRequirementYPosition=210;
+	TextManager dialogueText;
+	private int buttonYPosition=10;
+	private int questSlotXPosition= 540;
+	private int questSlotYPosition=170;
+	private int questTitleXPosition = 670;
+	private int questTitleYPosition = 185;
+	private int questRequirementYPosition=210;
+	private AccountManager updatePlayerAccount;
 	
-	int bakeryCounter, barbershopCounter, supermarketCounter, questBoardCounter,houseCounter;
 	TButton bakery, barbershop, supermarket, questBoard, house;
 	TButton questScreenExit, questScreenSubmit, notesScreenExit,questBoardAccept, questBoardExit;
 	FrameWork frame;
@@ -40,17 +41,17 @@ public class World extends GameObject {
 	
 	Background town;
 	Rectangle questBox, notesBox, exitBox;
-	Rectangle exitPopUpYesButtonRectangle, exitPopUpNoButtonRectangle;
+	Rectangle exitPopUpYesButtonRectangle, exitPopUpNoButtonRectangle,submitButtonRectangle;
 	Rectangle profileButtonRectangle, questButtonRectangle, notesButtonRectangle,referenceButtonRectangle, exitButtonRectangle, questBoardRectangle;
 	Rectangle questSlot1Rectangle, questSlot2Rectangle, questSlot3Rectangle, questSlot4Rectangle;
 	
-	BufferedImage questButton, questButtonHighlight, notesButton, notesButtonHighlight,exitButton, exitButtonHighlight;
+	BufferedImage questButton, questButtonHighlight, notesButton, notesButtonHighlight,exitButton, exitButtonHighlight, submitButton,submitButtonHighlight;
 	BufferedImage questPopUp, notesPopUp,exitPopUp, questBoardPopUp;
 	BufferedImage questSlot1, questSlot2, questSlot3,questSlot4, questSlot1Highlight, questSlot2Highlight, questSlot3Highlight,questSlot4Highlight;
 	BufferedImage exitPopUpYesButton, exitPopUpNoButton, exitPopUpNoButtonHighlight, exitPopUpYesButtonHighlight;
 	
 	Sprite questSlot1Image,questSlot2Image,questSlot3Image,questSlot4Image, questSlot1ImageHighlight,questSlot2ImageHighlight,questSlot3ImageHighlight,questSlot4ImageHighlight;
-	Sprite questScreen, notesScreen, exitScreen,uiTray, questBoardScreen;
+	Sprite questScreen, notesScreen, exitScreen,uiTray, questBoardScreen,submitButtonImage;
 	Sprite notesExit, exitYes, exitNo;
 	Sprite quest,notes,exit;
 	
@@ -73,23 +74,24 @@ public class World extends GameObject {
 
 	@Override
 	public void initResources() {
-		bakeryCounter=0; 
-		barbershopCounter=0; 
-		supermarketCounter=0;
-		questBoardCounter=0;
-		houseCounter=0;
+		updatePlayerAccount = new AccountManager();
+		dialogueText = new TextManager();
 		frame = new FrameWork(bsInput, 1024,780);
-		supermarket = new TButton("supermarket",644,82, 205,201);
 		bakery = new TButton("bakery",170,494, 123,132);
 		barbershop = new TButton("barbershop",804,507, 126,134);
 		questBoard = new TButton("quest board",432,357, 86,65);
 		house = new TButton("house",23,89, 144,81);
+		supermarket = new TButton("supermarket",644,82,205,201);
 		frame.add(bakery);
 		frame.add(supermarket);
 		frame.add(barbershop);
 		frame.add(questBoard);
 		frame.add(house);
-
+		
+		answer = new TTextField("answer",140,500,300,45);
+		frame.add(answer);
+		answer.setEnabled(false);
+		
 		town = new ImageBackground(getImage("images/TownMap1.png"));
 		
 		uiTray = new Sprite(getImage("images/UITray1.png"),0,0);
@@ -108,9 +110,9 @@ public class World extends GameObject {
 		exitButtonRectangle=new Rectangle(800,buttonYPosition,226,52);
 		
 		questPopUp = getImage("images/PopupWindow_Quests1.png");
-		questScreen = new Sprite(questPopUp,100,10);
+		questScreen = new Sprite(questPopUp,-140,10);
 		questScreen.setActive(false);
-		questScreenExit = new TButton("X", 689, 105, 30, 30);
+		questScreenExit = new TButton("X", 449, 105, 30, 30);
 		frame.add(questScreenExit);
 		questScreenExit.setVisible(false);
 		
@@ -166,8 +168,19 @@ public class World extends GameObject {
 		exitYes.setActive(false);
 		exitNo.setActive(false);
 		
+		submitButton = getImage("images/Button_Submit_Neutral.png");
+		submitButtonHighlight = getImage("images/Button_Submit_Clicked.png");
+		submitButtonImage = new Sprite(submitButton,185,562);
+		submitButtonRectangle = new Rectangle(185,562,201,60);
+		submitButtonImage.setActive(false);
+		
 		skillTree = new SkillTree();
-		player = new PlayerSprite(getImage("images/CharacterFront.png"),getImage("images/CharacterBack.png"),getImage("images/CharacterLeft.png"),getImage("images/CharacterRight.png"),skillTree);
+		try {
+			player = Session.getCurrentPlayer();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		
 		
@@ -192,7 +205,7 @@ public class World extends GameObject {
                 "`abcdefghijklmnopqrstuvwxyz{|}~~");
 		
 		questList = new QuestList();
-		questList.run();
+		questList.run(player.getPlayerID());
 	}
 	
 	@Override
@@ -209,8 +222,9 @@ public class World extends GameObject {
 		frame.update();
 		moveTo();
 		town.setToCenter(player);
-	
+		pickQuest();
 		closePopUp();
+		submitAnswer();
 	}
 
 
@@ -224,10 +238,7 @@ public class World extends GameObject {
 		UI_BUTTONS.render(g);
 		
 		showClosePopUp(g);
-		
-		
-		
-		
+		submitAnswer();
 	}
 
 	private void highlightButton() {
@@ -255,6 +266,10 @@ public class World extends GameObject {
         	exitYes.setImage(exitPopUpYesButton);
         
         }
+        else if(submitButtonRectangle.contains(p))
+        {
+        	submitButtonImage.setImage(submitButtonHighlight);
+        }
         else
         {
         	quest.setImage(questButton);
@@ -262,6 +277,7 @@ public class World extends GameObject {
         	exit.setImage(exitButton);
         	exitYes.setImage(exitPopUpYesButton);
         	exitNo.setImage(exitPopUpNoButton);
+        	submitButtonImage.setImage(submitButton);
         }
 	}
 	
@@ -302,23 +318,46 @@ public class World extends GameObject {
         	questSlot3Image.setImage(questSlot3);
         	questSlot4Image.setImage(questSlot4);
         }
-        
-        if(click())
+	}
+	
+	private void pickQuest()
+	{
+		if(click())
 		{
-			if(questSlot1Image.getImage().equals(questSlot1Highlight))
-			{
-				exitScreen.setActive(false);
-				exitYes.setActive(false);
-				exitNo.setActive(false);
-				enableOrDisableMap(true);
-			}
-			else if(exitYes.getImage().equals(exitPopUpYesButtonHighlight) && exitYes.isActive())
-			{
-				parent.nextGameID = 0;
-				finish();
-			}
-		}
-		
+            if(questSlot1Image.getImage().equals(questSlot1Highlight))
+            {
+            	questFullErrorDisplay(0);
+            	
+            }
+            if(questSlot2Image.getImage().equals(questSlot2Highlight))
+            {
+            	questFullErrorDisplay(1);
+            }
+            if(questSlot3Image.getImage().equals(questSlot3Highlight))
+            {
+            	questFullErrorDisplay(2);
+            }
+            if(questSlot4Image.getImage().equals(questSlot4Highlight))
+            {
+            	questFullErrorDisplay(3);
+            }
+		  }
+		  
+	}
+
+	private void questFullErrorDisplay(int i) {
+		if(player.getActiveQuest()[0] == null)
+		  {
+			questScreen.setActive(true);
+        	player.getActiveQuest()[0] = questList.getAvailableQuestList().get(i);
+        	questList.getAvailableQuestList().add(questList.getAvailableQuestList().remove(i));
+        	updatePlayerAccount.updateQuest(player.getActiveQuest()[0].getQuestID(), player.getPlayerID());
+		  }
+		  else
+		  {
+			  //TODO : error message
+			  System.out.println("error");
+		  }
 	}
 	
 	private void popUp()
@@ -343,11 +382,7 @@ public class World extends GameObject {
 					exitNo.setActive(true);
 	            	enableOrDisableMap(false);
 	            }
-			}
-			
-			if(click())
-			{
-				if(exitNo.getImage().equals(exitPopUpNoButtonHighlight))
+	            if(exitNo.getImage().equals(exitPopUpNoButtonHighlight))
 				{
 					exitScreen.setActive(false);
 					exitYes.setActive(false);
@@ -360,6 +395,7 @@ public class World extends GameObject {
 					finish();
 				}
 			}
+				
 			
 	}
 	
@@ -368,7 +404,8 @@ public class World extends GameObject {
 		{
 			questScreen.setActive(false);
 			questScreenExit.setVisible(false);
-			enableOrDisableMap(true);
+			answer.setText("answer");
+			enableOrDisableMap(true);	
 		}
 		if (notesScreenExit.isMousePressed())
 		{
@@ -389,19 +426,26 @@ public class World extends GameObject {
 	{
 		if (questScreen.isActive())
 		{
+			enableOrDisableMap(false);
 			questScreenExit.setVisible(true);
 			questScreenExit.render(g);
 			questScreen.render(g);
+			answer.render(g);
+			submitButtonImage.render(g);
+			renderActiveQuest(g);
 		}
 		if(notesScreen.isActive())
 		{
+			enableOrDisableMap(false);
 			notesScreenExit.setVisible(true);
 			notesScreenExit.render(g);
 			notesScreen.render(g);
-			text.drawString(g, "Cash is 1000 pesos", 350, 200);
+			dialogueText.nextLine(player.getPlayerNotes(), 370);
+			dialoguePrinter(g,350,200);
 		}
 		if(questBoardScreen.isActive())
 		{
+			enableOrDisableMap(false);
 			questBoardExit.setVisible(true);
 			questBoardExit.render(g);
 			questBoardScreen.render(g);
@@ -409,14 +453,22 @@ public class World extends GameObject {
 			questSlot2Image.render(g);
 			questSlot3Image.render(g);
 			questSlot4Image.render(g);
-			text.drawString(g, questList.getAvailableQuestList().get(0).getQuestTitle(), questTitleXPosition, questTitleYPosition);
-			text.drawString(g, questList.getAvailableQuestList().get(0).getQuestTitle(), questTitleXPosition, questTitleYPosition+113);	
-			text.drawString(g, questList.getAvailableQuestList().get(0).getQuestTitle(), questTitleXPosition, questTitleYPosition+226);	
-			text.drawString(g, questList.getAvailableQuestList().get(0).getQuestTitle(), questTitleXPosition, questTitleYPosition+339);
-			text.drawString(g, questList.getAvailableQuestList().get(0).getRequirement(), questSlotXPosition+15, questRequirementYPosition);
-			text.drawString(g, questList.getAvailableQuestList().get(0).getRequirement(), questSlotXPosition+15, questRequirementYPosition+113);	
-			text.drawString(g, questList.getAvailableQuestList().get(0).getRequirement(), questSlotXPosition+15, questRequirementYPosition+226);	
-			text.drawString(g, questList.getAvailableQuestList().get(0).getRequirement(), questSlotXPosition+15, questRequirementYPosition+339);	
+			dialogueText.nextLine(questList.getAvailableQuestList().get(0).getQuestTitle(),200);
+			dialoguePrinter(g,questTitleXPosition,questTitleYPosition);
+			dialogueText.nextLine(questList.getAvailableQuestList().get(1).getQuestTitle(),200);
+			dialoguePrinter(g,questTitleXPosition,questTitleYPosition+113);	
+			dialogueText.nextLine(questList.getAvailableQuestList().get(2).getQuestTitle(),200);
+			dialoguePrinter(g,questTitleXPosition,questTitleYPosition+226);		
+			dialogueText.nextLine(questList.getAvailableQuestList().get(3).getQuestTitle(),200);
+			dialoguePrinter(g,questTitleXPosition,questTitleYPosition+339);
+			dialogueText.nextLine(questList.getAvailableQuestList().get(0).getRequirement(), 349);
+			dialoguePrinter(g,questSlotXPosition+15,questRequirementYPosition);
+			dialogueText.nextLine(questList.getAvailableQuestList().get(1).getRequirement(), 349);
+			dialoguePrinter(g,questSlotXPosition+15,questRequirementYPosition+113);	
+			dialogueText.nextLine(questList.getAvailableQuestList().get(2).getRequirement(), 349);
+			dialoguePrinter(g,questSlotXPosition+15,questRequirementYPosition+226);	
+			dialogueText.nextLine(questList.getAvailableQuestList().get(3).getRequirement(), 349);
+			dialoguePrinter(g,questSlotXPosition+15,questRequirementYPosition+339);	
 		}
 		if(exitScreen.isActive())
 		{
@@ -426,6 +478,25 @@ public class World extends GameObject {
 		}
 	}
 
+	private void renderActiveQuest(Graphics2D g) {
+		if (player.getActiveQuest()[0] != null)
+		{
+			dialogueText.nextLine(player.getActiveQuest()[0].getQuestTitle(), 370);
+			text.drawString(g, dialogueText.getDialogueText().get(0), 100, 175);
+			dialogueText.nextLine(player.getActiveQuest()[0].getQuestStory(), 370);
+			dialoguePrinter(g,100,200);
+		}
+	}
+
+	private void dialoguePrinter(Graphics2D g, int x, int y) {
+		for (int i=0;i<dialogueText.getDialogueText().size();i++)
+		{
+			text.drawString(g,dialogueText.getDialogueText().get(i) , x, y+i*15);
+		}
+	}
+
+	
+
 	public void moveTo()
 	{
 		if(bakery.isMousePressed())
@@ -433,65 +504,73 @@ public class World extends GameObject {
 			player.setLocation(156, 460);
 			parent.nextGameID = 3;
 			finish();
-			if (bakery.isMousePressed() && bakeryCounter==2)
-			{
-				System.out.println("Enter");
-			}
+
 		}
 		if(supermarket.isMousePressed())
 		{
 			player.setLocation(648, 110);
 			parent.nextGameID = 4;
 			finish();
-			if (supermarket.isMousePressed() && supermarketCounter==2)
-			{
-				System.out.println("Enter1");
-				//supermarketCounter=0;
-			}
+
 		}
 		if(barbershop.isMousePressed())
 		{
 			player.setLocation(891, 490);
 			parent.nextGameID = 2;
 			finish();
-			if (barbershop.isMousePressed() && barbershopCounter==2)
-			{
-				System.out.println("Enter2");
-				
-				//barbershopCounter=0;
-			}
+			
 		}
 		if(questBoard.isMousePressed())
 		{
 			player.setLocation(425, 250);
 			questBoardScreen.setActive(true);
 			enableOrDisableMap(false);
-			if (questBoard.isMousePressed() && questBoardCounter==2)
-			{
-				System.out.println("Enter3");
-				//questBoardCounter=0;
-			}
+
 		}
 		if(house.isMousePressed())
 		{
 			player.setLocation(0, 0);
-			if (house.isMousePressed() && houseCounter==2)
-			{
-				System.out.println("Enter4");
-				//houseCounter=0;
-			}
+
 		}
 	}
 	
 	private void enableOrDisableMap(boolean visible)
 	{
-		bakery.setVisible(visible);
-		supermarket.setVisible(visible);
-		barbershop.setVisible(visible);
-		questBoard.setVisible(visible);
-		house.setVisible(visible);
+		supermarket.setEnabled(visible);
+		bakery.setEnabled(visible);
+		barbershop.setEnabled(visible);
+		questBoard.setEnabled(visible);
+		house.setEnabled(visible);
+		answer.setEnabled(!visible);
+		submitButtonImage.setActive(!visible);
 	}
 	
 	
+	private void submitAnswer()
+	{
+		if(click())
+		{
+	        if(submitButtonImage.getImage().equals(submitButtonHighlight) && submitButtonImage.isActive())
+	        {
+	            if (answer.getText()!=null && answer.getText().toLowerCase().equals(player.getActiveQuest()[0].getAnswer()))
+	            {
+	            	//TODO: show success
+	            	System.out.println("success");
+	            	updatePlayerAccount.updateLevel(player.getActiveQuest()[0].getSkillLevel(),player.getPlayerID(),player.getActiveQuest()[0].getSkillID());
+	            	updatePlayerAccount.removeQuest(player.getPlayerID());
+	            	player.getActiveQuest()[0] = null;
+	            	
+	            }
+	            else
+	            {
+	            	//show failure
+	            	System.out.println("failure");
+	            	updatePlayerAccount.removeQuest(player.getPlayerID());
+	            	player.getActiveQuest()[0] = null;
+	            }
+	            	
+	        }
+		}
+	}
 
 }

@@ -4,42 +4,56 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 
+import accountingGame.AccountManager;
+import accountingGame.Session;
+import accountingGame.TextManager;
 import accountingGame.sprite.PlayerSprite;
 
 import com.golden.gamedev.GameEngine;
 import com.golden.gamedev.GameObject;
 import com.golden.gamedev.gui.TButton;
+import com.golden.gamedev.gui.TTextField;
 import com.golden.gamedev.gui.toolkit.FrameWork;
 import com.golden.gamedev.object.Background;
+import com.golden.gamedev.object.GameFont;
 import com.golden.gamedev.object.Sprite;
 import com.golden.gamedev.object.SpriteGroup;
 import com.golden.gamedev.object.background.ImageBackground;
 
 public class Bakery extends GameObject {
-	int buttonYPosition=10;
+	
+	TextManager dialogueText;
+	private int buttonYPosition=10;
+	private int dialogueBoxWidth;
 	TButton welcome, cash, cakeInventory, breadInventory, manager,records ;
 	TButton questScreenExit, questScreenSubmit, notesScreenExit;
 	FrameWork frame;
 	
+	TTextField answer;
+	
 	Background town;
 	Rectangle questBox, notesBox, exitBox;
-	Rectangle exitPopUpYesButtonRectangle, exitPopUpNoButtonRectangle;
+	Rectangle exitPopUpYesButtonRectangle, exitPopUpNoButtonRectangle,submitButtonRectangle;
 	Rectangle profileButtonRectangle, questButtonRectangle, notesButtonRectangle,referenceButtonRectangle, exitButtonRectangle, questBoardRectangle;
-	BufferedImage questButton, questButtonHighlight, notesButton, notesButtonHighlight,exitButton, exitButtonHighlight;
+	BufferedImage questButton, questButtonHighlight, notesButton, notesButtonHighlight,exitButton, exitButtonHighlight,submitButton,submitButtonHighlight;
 	BufferedImage questPopUp, notesPopUp,exitPopUp, dialogueBox;
 	BufferedImage exitPopUpYesButton, exitPopUpNoButton, exitPopUpNoButtonHighlight, exitPopUpYesButtonHighlight;
-	Sprite questScreen, notesScreen, exitScreen,uiTray, dialogueTray;
+	Sprite questScreen, notesScreen, exitScreen,uiTray, dialogueTray,submitButtonImage;
 	Sprite questExit,notesExit, exitYes, exitNo;
 	Sprite quest,notes,exit;
 	
-	
+	private AccountManager updatePlayerAccount;
+
 	private PlayerSprite player;
 	private SkillTree skillTree;
 	
 	private SpriteGroup UI_POPUPS;
 	private SpriteGroup PLAYER;
 	private SpriteGroup UI_BUTTONS;
+	
+	private GameFont text;
 	
 	public Bakery(GameEngine gameEngine) {
 		super(gameEngine);
@@ -48,6 +62,9 @@ public class Bakery extends GameObject {
 
 	@Override
 	public void initResources() {
+		updatePlayerAccount = new AccountManager();
+		dialogueText= new TextManager();
+		dialogueBoxWidth = 505;
 		frame = new FrameWork(bsInput, 1024,780);
 		welcome = new TButton("welcome",399,512, 219,106);
 		cash = new TButton("cash",665,305, 103,64);
@@ -61,7 +78,11 @@ public class Bakery extends GameObject {
 		frame.add(cakeInventory);
 		frame.add(records);
 		frame.add(manager);
-
+		
+		answer = new TTextField("answer",140,500,300,45);
+		frame.add(answer);
+		answer.setEnabled(false);
+		
 		town = new ImageBackground(getImage("images/Bakery_Inside1.png"));
 		
 		uiTray = new Sprite(getImage("images/UITray1.png"),0,0);
@@ -80,9 +101,9 @@ public class Bakery extends GameObject {
 		exitButtonRectangle=new Rectangle(800,buttonYPosition,226,52);
 		
 		questPopUp = getImage("images/PopupWindow_Quests1.png");
-		questScreen = new Sprite(questPopUp,100,10);
+		questScreen = new Sprite(questPopUp,-140,10);
 		questScreen.setActive(false);
-		questScreenExit = new TButton("X", 689, 105, 30, 30);
+		questScreenExit = new TButton("X", 449, 105, 30, 30);
 		frame.add(questScreenExit);
 		questScreenExit.setVisible(false);
 		
@@ -107,30 +128,24 @@ public class Bakery extends GameObject {
 		exitYes.setActive(false);
 		exitNo.setActive(false);
 		
-		dialogueBox = getImage("images/DialogueBox.png");
-		dialogueTray = new Sprite(dialogueBox,0,600);
+		dialogueBox = getImage("images/DialogueBoxBakery.png");
+		dialogueTray = new Sprite(dialogueBox,260,539);
 		dialogueTray.setActive(false);
 		
+		submitButton = getImage("images/Button_Submit_Neutral.png");
+		submitButtonHighlight = getImage("images/Button_Submit_Clicked.png");
+		submitButtonImage = new Sprite(submitButton,185,562);
+		submitButtonRectangle = new Rectangle(185,562,201,60);
+		submitButtonImage.setActive(false);
 		
-		//questBox = new Rectangle(320,240,0,0);
-		
-		/*
-		
-
-		exitPopUpYesButton = getImage("");
-		exitPopUpNoButton = getImage("");
-
-		exitScreen = new Sprite(exitPopUp,0,0);
-
-		
-		notesBox = new Rectangle(0,0,0,0);
-		exitBox = new Rectangle(0,0,0,0);
-		exitPopUpYesButtonRectangle = new Rectangle(0,0,0,0);
-		exitPopUpNoButtonRectangle = new Rectangle(0,0,0,0);
-		*/
 		skillTree = new SkillTree();
-		player = new PlayerSprite(getImage("images/CharacterFront.png"),getImage("images/CharacterBack.png"),getImage("images/CharacterLeft.png"),getImage("images/CharacterRight.png"),skillTree);
 		
+		try {
+			player = Session.getCurrentPlayer();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		
 		UI_BUTTONS = new SpriteGroup("UI");
@@ -148,6 +163,10 @@ public class Bakery extends GameObject {
 		PLAYER.add(player);
 		PLAYER.setBackground(town);
 		
+		text = fontManager.getFont(getImages("images/smallfont.png", 8, 12),
+                " !\"#$%&'()*+,-./0123456789:;<=>?" +
+                "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_" +
+                "`abcdefghijklmnopqrstuvwxyz{|}~~");
 		
 	}
 	
@@ -164,6 +183,7 @@ public class Bakery extends GameObject {
 		PLAYER.update(elapsedTime);
 		frame.update();
 		moveTo();
+		submitAnswer();
 		town.setToCenter(player);
 		closePopUp();
 	}
@@ -173,7 +193,7 @@ public class Bakery extends GameObject {
 		frame.render(g);
 		town.render(g);
 		uiTray.render(g);
-		PLAYER.render(g);
+		//PLAYER.render(g);
 		UI_BUTTONS.render(g);
 		showClosePopUp(g);
 		
@@ -206,6 +226,10 @@ public class Bakery extends GameObject {
         	exitYes.setImage(exitPopUpYesButton);
         
         }
+        else if(submitButtonRectangle.contains(p))
+        {
+        	submitButtonImage.setImage(submitButtonHighlight);
+        }
         else
         {
         	quest.setImage(questButton);
@@ -213,6 +237,7 @@ public class Bakery extends GameObject {
         	exit.setImage(exitButton);
         	exitYes.setImage(exitPopUpYesButton);
         	exitNo.setImage(exitPopUpNoButton);
+        	submitButtonImage.setImage(submitButton);
         }
 	}
 	
@@ -231,16 +256,13 @@ public class Bakery extends GameObject {
 	            	notesScreen.setActive(true);
 	            	enableOrDisableMap(false);
 	            }
-	            else if(exitYes.getImage().equals(exitPopUpYesButtonHighlight) && exitYes.isActive())
+	            if(exit.getImage().equals(exitButtonHighlight))
 	            {
 	            	exitScreen.setActive(true);
 	            	exitYes.setActive(true);
 					exitNo.setActive(true);
 	            	enableOrDisableMap(false);
 	            }
-			}
-			if(click())
-			{
 				if(exitNo.getImage().equals(exitPopUpNoButtonHighlight))
 				{
 					exitScreen.setActive(false);
@@ -263,6 +285,8 @@ public class Bakery extends GameObject {
 			questScreen.setActive(false);
 			questScreenExit.setVisible(false);
 			enableOrDisableMap(true);
+			answer.setText("answer");
+			submitButtonImage.setActive(false);
 		}
 		if (notesScreenExit.isMousePressed())
 		{
@@ -285,17 +309,24 @@ public class Bakery extends GameObject {
 			questScreenExit.setVisible(true);
 			questScreenExit.render(g);
 			questScreen.render(g);
+			answer.render(g);
+			submitButtonImage.render(g);
+			renderActiveQuest(g);
 		}
 		if(notesScreen.isActive())
 		{
 			notesScreenExit.setVisible(true);
 			notesScreenExit.render(g);
 			notesScreen.render(g);
+			dialogueText.nextLine(player.getPlayerNotes(), 370);
+			dialoguePrinter(g,350,200);
 		
 		}
 		if(dialogueTray.isActive())
 		{
-			UI_POPUPS.render(g);
+			dialogueTray.render(g);
+			//text.drawString(g, "Cash is 1000 pesos", 280, 547);
+			dialoguePrinter(g, 280, 547);
 		}
 		if(exitScreen.isActive())
 		{
@@ -306,31 +337,86 @@ public class Bakery extends GameObject {
 		
 	}
 
+	private void renderActiveQuest(Graphics2D g) {
+		if (player.getActiveQuest()[0] != null)
+		{
+			dialogueText.nextLine(player.getActiveQuest()[0].getQuestTitle(), 370);
+			text.drawString(g, dialogueText.getDialogueText().get(0), 100, 175);
+			dialogueText.nextLine(player.getActiveQuest()[0].getQuestStory(), 370);
+			dialoguePrinter(g,100,200);
+		}
+	}
+
 	public void moveTo()
 	{
+
 		if(welcome.isMousePressed())
 		{
+			updatePlayerAccount.updateAccount(player.getPlayerNotes(),player.getPlayerID());
 			parent.nextGameID = 1;
 			finish();
 		}
 		if(cash.isMousePressed())
 		{
+			
+			if (player.getActiveQuest()[0] == null  || !(player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("baker")))
+			{
+				dialogueText.nextLine("Maybe I should consider switching careers",dialogueBoxWidth);
+			}
+			else if (player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("baker"))
+			{
+				dialogueText.nextLine("The cash register has a total amount of " +player.getActiveQuest()[0].getQuestInformation().get("cash").getValue()+"", dialogueBoxWidth-60);
+				player.setPlayerNotes(player.getPlayerNotes()+"The cash register has a total amount of " +player.getActiveQuest()[0].getQuestInformation().get("cash").getValue()+"");
+			}
+			
 			dialogueTray.setActive(true);
 			enableOrDisableMap(false);
 		}
 		if(cakeInventory.isMousePressed() || breadInventory.isMousePressed())
 		{
+			if (player.getActiveQuest()[0]==null  || !(player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("baker")))
+			{
+				dialogueText.nextLine("Yummy", dialogueBoxWidth);
+			}
+			else if (player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("baker"))
+			{
+				dialogueText.nextLine("So much bread,pastries and cake, If only I have " +player.getActiveQuest()[0].getQuestInformation().get("inventory").getValue()+""+" to buy all of these", dialogueBoxWidth-60);
+				player.setPlayerNotes(player.getPlayerNotes()+"So much bread,pastries and cake, If only I have " +player.getActiveQuest()[0].getQuestInformation().get("inventory").getValue()+""+" to buy all of these");
+			}
+			
+			
 			dialogueTray.setActive(true);
 			enableOrDisableMap(false);
 		}
 		if(manager.isMousePressed())
 		{
+			if (player.getActiveQuest()[0]==null  || !(player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("baker")))
+			{
+				dialogueText.nextLine("Welcome, please help yourself",dialogueBoxWidth);
+			}
+			else if (player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("baker"))
+			{
+				dialogueText.nextLine(player.getActiveQuest()[0].getNpc().get(0).getDialogue(), dialogueBoxWidth-60);
+				player.setPlayerNotes(player.getPlayerNotes()+player.getActiveQuest()[0].getNpc().get(0).getDialogue());
+			}
+			
+			
 			dialogueTray.setActive(true);
 			enableOrDisableMap(false);
 
 		}
 		if(records.isMousePressed())
 		{
+			if (player.getActiveQuest()[0]==null  || !(player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("baker")))
+			{
+				dialogueText.nextLine("Yummy", dialogueBoxWidth);
+			}
+			else if (player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("baker"))
+			{
+				dialogueText.nextLine("So much bread,pastries and cake, If only I have " +player.getActiveQuest()[0].getQuestInformation().get("inventory").getValue()+""+" to buy all of these", dialogueBoxWidth-60);
+				player.setPlayerNotes(player.getPlayerNotes()+"So much bread,pastries and cake, If only I have " +player.getActiveQuest()[0].getQuestInformation().get("inventory").getValue()+""+" to buy all of these");
+			}
+			
 			dialogueTray.setActive(true);
 			enableOrDisableMap(false);
 		}
@@ -338,14 +424,49 @@ public class Bakery extends GameObject {
 	
 	private void enableOrDisableMap(boolean visible)
 	{
-		welcome.setVisible(visible);
-		cash.setVisible(visible);
-		cakeInventory.setVisible(visible);
-		breadInventory.setVisible(visible);
-		manager.setVisible(visible);
-		records.setVisible(visible);
+		welcome.setEnabled(visible);
+		cash.setEnabled(visible);
+		cakeInventory.setEnabled(visible);
+		breadInventory.setEnabled(visible);
+		manager.setEnabled(visible);
+		records.setEnabled(visible);
+		answer.setEnabled(!visible);
+		submitButtonImage.setActive(!visible);
+	}
+
+	
+	private void dialoguePrinter(Graphics2D g, int x, int y) {
+		for (int i=0;i<dialogueText.getDialogueText().size();i++)
+		{
+			text.drawString(g,dialogueText.getDialogueText().get(i) , x, y+i*15);
+		}
 	}
 	
-	
+	private void submitAnswer()
+	{
+		if(click())
+		{
+	        if(submitButtonImage.getImage().equals(submitButtonHighlight) && submitButtonImage.isActive())
+	        {
+	            if (answer.getText().toLowerCase().equals(player.getActiveQuest()[0].getAnswer()))
+	            {
+	            	//TODO: show success
+	            	System.out.println("success");
+	            	updatePlayerAccount.updateLevel(player.getActiveQuest()[0].getSkillLevel(),player.getPlayerID(),player.getActiveQuest()[0].getSkillID());
+	            	updatePlayerAccount.removeQuest(player.getPlayerID());
+	            	player.getActiveQuest()[0] = null;
+	            	
+	            }
+	            else
+	            {
+	            	//show failure
+	            	System.out.println("failure");
+	            	updatePlayerAccount.removeQuest(player.getPlayerID());
+	            	player.getActiveQuest()[0] = null;
+	            }
+	            	
+	        }
+		}
+	}
 
 }

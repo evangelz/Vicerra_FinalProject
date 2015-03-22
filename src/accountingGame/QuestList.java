@@ -60,7 +60,7 @@ public class QuestList {
 	    }
 	}
 	
-	public void run() {
+	public void run(int playerID) {
 		PreparedStatement pickQuest = null;
 		// Connect to MySQL
 		Connection conn = null;
@@ -75,17 +75,18 @@ public class QuestList {
 		try {
 			ResultSet resultSet=null;
 			ResultSetMetaData resultSetMetaData;
-			String currentPlayer = "1";
-			pickQuest = conn.prepareStatement("select * from quest A inner join player_skill_level B on A.skill_id = B.skill_id and A.skill_level = B.skill_level inner join player_account C where C.player_id = ?");
-			pickQuest.setString(1,currentPlayer);
+			pickQuest = conn.prepareStatement("select * from player_account A inner join player_skill_level B on A.player_id = B.player_id inner join quest C on B.skill_id = C.skill_id where C.skill_level = B.skill_level and B.player_id = ?");
+			pickQuest.setString(1,playerID+"");
 			resultSet = pickQuest.executeQuery();
 			while(resultSet.next())
 			{
 				QuestTemplate quest =new QuestTemplate();
-				
+				quest.setQuestID(resultSet.getInt("quest_id"));
 				quest.setQuestTitle(resultSet.getString("quest_name"));
+				quest.setQuestID(resultSet.getInt("quest_id"));
 				quest.setRequirement(resultSet.getString("quest_requirement"));
-				for (int i = 4;i<=17;i++)
+				quest.setQuestStory(resultSet.getString("quest_story"));
+				for (int i = 12;i<=25;i++)
 				{
 					if (resultSet.getInt(i)!=0)
 					{
@@ -101,7 +102,7 @@ public class QuestList {
 					records.setRecords(resultSet.getString("records"));
 				}
 				NPC npc = new NPC();
-				npc.setnPCName(resultSet.getString("npc"));
+				npc.setNPCName(resultSet.getString("npc"));
 				npc.setDialogue(resultSet.getString("dialogue"));
 				quest.setAnswer(resultSet.getString("quest_answer"));
 				quest.getNpc().add(npc);
