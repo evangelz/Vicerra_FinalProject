@@ -351,10 +351,9 @@ public class World extends GameObject {
 			questScreen.setActive(true);
         	player.getActiveQuest()[0] = questList.getAvailableQuestList().get(i);
         	questList.getAvailableQuestList().add(questList.getAvailableQuestList().remove(i));
-<<<<<<< HEAD
+
         	updatePlayerAccount.updateQuest(player.getActiveQuest()[0].getQuestID(), player.getPlayerID());
-=======
->>>>>>> origin/master
+
 		  }
 		  else
 		  {
@@ -408,11 +407,9 @@ public class World extends GameObject {
 			questScreen.setActive(false);
 			questScreenExit.setVisible(false);
 			answer.setText("answer");
-<<<<<<< HEAD
+
 			enableOrDisableMap(true);	
-=======
-			enableOrDisableMap(true);
->>>>>>> origin/master
+
 		}
 		if (notesScreenExit.isMousePressed())
 		{
@@ -559,11 +556,8 @@ public class World extends GameObject {
 		{
 	        if(submitButtonImage.getImage().equals(submitButtonHighlight) && submitButtonImage.isActive())
 	        {
-<<<<<<< HEAD
 	            if (answer.getText()!=null && answer.getText().toLowerCase().equals(player.getActiveQuest()[0].getAnswer()))
-=======
-	            if (answer.getText().toLowerCase().equals(player.getActiveQuest()[0].getAnswer()))
->>>>>>> origin/master
+
 	            {
 	            	//TODO: show success
 	            	System.out.println("success");
