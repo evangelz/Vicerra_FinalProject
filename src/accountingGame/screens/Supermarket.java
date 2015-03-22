@@ -4,35 +4,47 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 
+import accountingGame.AccountManager;
+import accountingGame.Session;
+import accountingGame.TextManager;
 import accountingGame.sprite.PlayerSprite;
 
 import com.golden.gamedev.GameEngine;
 import com.golden.gamedev.GameObject;
 import com.golden.gamedev.gui.TButton;
+import com.golden.gamedev.gui.TTextField;
 import com.golden.gamedev.gui.toolkit.FrameWork;
 import com.golden.gamedev.object.Background;
+import com.golden.gamedev.object.GameFont;
 import com.golden.gamedev.object.Sprite;
 import com.golden.gamedev.object.SpriteGroup;
 import com.golden.gamedev.object.background.ImageBackground;
 
 public class Supermarket extends GameObject {
-	int buttonYPosition=10;
+	
+	TextManager dialogueText;
+	private int buttonYPosition=10;
+	private int dialogueBoxWidth;
 	TButton welcome, rightShelfInventory, leftShelfInventory,freezerInventory, boyEmployee,girlEmployee,records,pushcart ;
 	TButton questScreenExit, questScreenSubmit, notesScreenExit;
 	FrameWork frame;
 	
+	TTextField answer;
+	
 	Background town;
 	Rectangle questBox, notesBox, exitBox;
-	Rectangle exitPopUpYesButtonRectangle, exitPopUpNoButtonRectangle;
+	Rectangle exitPopUpYesButtonRectangle, exitPopUpNoButtonRectangle,submitButtonRectangle;
 	Rectangle profileButtonRectangle, questButtonRectangle, notesButtonRectangle,referenceButtonRectangle, exitButtonRectangle, questBoardRectangle;
-	BufferedImage questButton, questButtonHighlight, notesButton, notesButtonHighlight,exitButton, exitButtonHighlight;
-	BufferedImage questPopUp, notesPopUp,exitPopUp;
+	BufferedImage questButton, questButtonHighlight, notesButton, notesButtonHighlight,exitButton, exitButtonHighlight,submitButton,submitButtonHighlight;
+	BufferedImage questPopUp, notesPopUp,exitPopUp,dialogueBox;
 	BufferedImage exitPopUpYesButton, exitPopUpNoButton, exitPopUpNoButtonHighlight, exitPopUpYesButtonHighlight;
-	Sprite questScreen, notesScreen, exitScreen,uiTray;
+	Sprite questScreen, notesScreen, exitScreen,uiTray,dialogueTray,submitButtonImage;
 	Sprite questExit,notesExit, exitYes, exitNo;
 	Sprite quest,notes,exit;
 	
+	private AccountManager updatePlayerAccount;
 	
 	private PlayerSprite player;
 	private SkillTree skillTree;
@@ -41,6 +53,8 @@ public class Supermarket extends GameObject {
 	private SpriteGroup PLAYER;
 	private SpriteGroup UI_BUTTONS;
 	
+	private GameFont text;
+	
 	public Supermarket(GameEngine gameEngine) {
 		super(gameEngine);
 		
@@ -48,6 +62,9 @@ public class Supermarket extends GameObject {
 
 	@Override
 	public void initResources() {
+		updatePlayerAccount = new AccountManager();
+		dialogueBoxWidth = 870;
+		dialogueText = new TextManager();
 		frame = new FrameWork(bsInput, 1024,780);
 		welcome = new TButton("welcome",519,594, 144,65);
 		rightShelfInventory = new TButton("right shelf",618,288,333,111);
@@ -65,7 +82,10 @@ public class Supermarket extends GameObject {
 		frame.add(records);
 		frame.add(girlEmployee);
 		frame.add(boyEmployee);
-
+		
+		answer = new TTextField("answer",140,500,300,45);
+		frame.add(answer);
+		answer.setEnabled(false);
 		town = new ImageBackground(getImage("images/SuperMarket_Inside1.png"));
 		
 		uiTray = new Sprite(getImage("images/UITray1.png"),0,0);
@@ -84,9 +104,9 @@ public class Supermarket extends GameObject {
 		exitButtonRectangle=new Rectangle(800,buttonYPosition,226,52);
 		
 		questPopUp = getImage("images/PopupWindow_Quests1.png");
-		questScreen = new Sprite(questPopUp,100,10);
+		questScreen = new Sprite(questPopUp,-140,10);
 		questScreen.setActive(false);
-		questScreenExit = new TButton("X", 689, 105, 30, 30);
+		questScreenExit = new TButton("X", 449, 105, 30, 30);
 		frame.add(questScreenExit);
 		questScreenExit.setVisible(false);
 		
@@ -110,25 +130,25 @@ public class Supermarket extends GameObject {
 		exitScreen.setActive(false);
 		exitYes.setActive(false);
 		exitNo.setActive(false);
-		//questBox = new Rectangle(320,240,0,0);
 		
-		/*
+		dialogueBox = getImage("images/DialogueBoxSupa.png");
+		dialogueTray = new Sprite(dialogueBox,82,517);
+		dialogueTray.setActive(false);
 		
-
-		exitPopUpYesButton = getImage("");
-		exitPopUpNoButton = getImage("");
-
-		exitScreen = new Sprite(exitPopUp,0,0);
-
+		submitButton = getImage("images/Button_Submit_Neutral.png");
+		submitButtonHighlight = getImage("images/Button_Submit_Clicked.png");
+		submitButtonImage = new Sprite(submitButton,185,562);
+		submitButtonRectangle = new Rectangle(185,562,201,60);
+		submitButtonImage.setActive(false);
 		
-		notesBox = new Rectangle(0,0,0,0);
-		exitBox = new Rectangle(0,0,0,0);
-		exitPopUpYesButtonRectangle = new Rectangle(0,0,0,0);
-		exitPopUpNoButtonRectangle = new Rectangle(0,0,0,0);
-		*/
 		skillTree = new SkillTree();
-		player = new PlayerSprite(getImage("images/CharacterFront.png"),getImage("images/CharacterBack.png"),getImage("images/CharacterLeft.png"),getImage("images/CharacterRight.png"),skillTree);
 		
+		try {
+			player = Session.getCurrentPlayer();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		
 		UI_BUTTONS = new SpriteGroup("UI");
@@ -140,11 +160,16 @@ public class Supermarket extends GameObject {
 		UI_POPUPS.add(questScreen);
 		UI_POPUPS.add(notesScreen);
 		UI_POPUPS.add(exitScreen);
+		UI_POPUPS.add(dialogueTray);
 		
 		PLAYER = new SpriteGroup("Character");
 		PLAYER.add(player);
 		PLAYER.setBackground(town);
 		
+		text = fontManager.getFont(getImages("images/smallfont.png", 8, 12),
+                " !\"#$%&'()*+,-./0123456789:;<=>?" +
+                "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_" +
+                "`abcdefghijklmnopqrstuvwxyz{|}~~");
 		
 	}
 	
@@ -160,6 +185,7 @@ public class Supermarket extends GameObject {
 		PLAYER.update(elapsedTime);
 		frame.update();
 		moveTo();
+		submitAnswer();
 		town.setToCenter(player);
 		closePopUp();
 	}
@@ -169,7 +195,7 @@ public class Supermarket extends GameObject {
 		frame.render(g);
 		town.render(g);
 		uiTray.render(g);
-		PLAYER.render(g);
+		//PLAYER.render(g);
 		UI_BUTTONS.render(g);
 		showClosePopUp(g);
 		
@@ -203,6 +229,10 @@ public class Supermarket extends GameObject {
         	exitYes.setImage(exitPopUpYesButton);
         
         }
+        else if(submitButtonRectangle.contains(p))
+        {
+        	submitButtonImage.setImage(submitButtonHighlight);
+        }
         else
         {
         	quest.setImage(questButton);
@@ -210,6 +240,7 @@ public class Supermarket extends GameObject {
         	exit.setImage(exitButton);
         	exitYes.setImage(exitPopUpYesButton);
         	exitNo.setImage(exitPopUpNoButton);
+        	submitButtonImage.setImage(submitButton);
         }
 	}
 	
@@ -235,9 +266,6 @@ public class Supermarket extends GameObject {
 					exitNo.setActive(true);
 	            	enableOrDisableMap(false);
 	            }
-			}
-			if(click())
-			{
 				if(exitNo.getImage().equals(exitPopUpNoButtonHighlight))
 				{
 					exitScreen.setActive(false);
@@ -260,11 +288,18 @@ public class Supermarket extends GameObject {
 			questScreen.setActive(false);
 			questScreenExit.setVisible(false);
 			enableOrDisableMap(true);
+			answer.setText("answer");
+			
 		}
 		if (notesScreenExit.isMousePressed())
 		{
 			notesScreen.setActive(false);
 			notesScreenExit.setVisible(false);
+			enableOrDisableMap(true);
+		}
+		if(click() && dialogueTray.isActive())
+		{
+			dialogueTray.setActive(false);
 			enableOrDisableMap(true);
 		}
 		
@@ -277,13 +312,24 @@ public class Supermarket extends GameObject {
 			questScreenExit.setVisible(true);
 			questScreenExit.render(g);
 			questScreen.render(g);
+			answer.render(g);
+			submitButtonImage.render(g);
+			renderActiveQuest(g);
 		}
 		if(notesScreen.isActive())
 		{
 			notesScreenExit.setVisible(true);
 			notesScreenExit.render(g);
 			notesScreen.render(g);
+			dialogueText.nextLine(player.getPlayerNotes(), 370);
+			dialoguePrinter(g,350,200);
 			
+		}
+		if(dialogueTray.isActive())
+		{
+			dialogueTray.render(g);
+			//text.drawString(g, "Cash is 1000 pesos", 102, 526);
+			dialoguePrinter(g, 102, 526);
 		}
 		if(exitScreen.isActive())
 		{
@@ -293,43 +339,139 @@ public class Supermarket extends GameObject {
 		}
 	}
 
+	private void renderActiveQuest(Graphics2D g) {
+		if (player.getActiveQuest()[0] != null)
+		{
+			dialogueText.nextLine(player.getActiveQuest()[0].getQuestTitle(), 370);
+			text.drawString(g, dialogueText.getDialogueText().get(0), 100, 175);
+			dialogueText.nextLine(player.getActiveQuest()[0].getQuestStory(), 370);
+			dialoguePrinter(g,100,200);
+		}
+	}
+
 	public void moveTo()
 	{
 		if(welcome.isMousePressed())
 		{
+			dialogueText.nextLine("Please come back again",dialogueBoxWidth);
+			updatePlayerAccount.updateAccount(player.getPlayerNotes(),player.getPlayerID());
 			parent.nextGameID = 1;
 			finish();
 		}
 		if(leftShelfInventory.isMousePressed() || rightShelfInventory.isMousePressed() || freezerInventory.isMousePressed())
 		{
-			player.setLocation(891, 490);
+			
+			if (player.getActiveQuest()[0]==null  || !(player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("supermarket")))
+			{
+				dialogueText.nextLine("I better buy some eggs for breakfast tomorrow",dialogueBoxWidth);
+			}
+			else if (player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("supermarket"))
+			{
+				dialogueText.nextLine("Upon doing an inventory count, This would cost around " +player.getActiveQuest()[0].getQuestInformation().get("inventory").getValue()+"", dialogueBoxWidth-60);
+				player.setPlayerNotes(player.getPlayerNotes()+"Upon doing an inventory count, This would cost around " +player.getActiveQuest()[0].getQuestInformation().get("inventory").getValue()+"");
+			}
+			dialogueTray.setActive(true);
+			enableOrDisableMap(false);
 		}
 		if(boyEmployee.isMousePressed())
 		{
-			player.setLocation(425, 250);
-
+			
+			if (player.getActiveQuest()[0]==null  || !(player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("supermarket")))
+			{
+				dialogueText.nextLine("I better buy some eggs for breakfast tomorrow",dialogueBoxWidth);
+			}
+			else if (player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("supermarket"))
+			{
+				dialogueText.nextLine("You're here to do the request? talk to the May for more information ", dialogueBoxWidth-60);
+				player.setPlayerNotes(player.getPlayerNotes()+"BoyEmployee: You're here to do the request? talk to the May for more information ");
+			}
+			dialogueText.nextLine("Welcome, if you need anything don't hesitate to ask",dialogueBoxWidth);
+			dialogueTray.setActive(true);
+			enableOrDisableMap(false);
 		}
 		if(girlEmployee.isMousePressed())
 		{
 			
+			if (player.getActiveQuest()[0]==null  || !(player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("supermarket")))
+			{
+				dialogueText.nextLine("Welcome, How may I help you?",dialogueBoxWidth);
+			}
+			else if (player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("supermarket"))
+			{
+				dialogueText.nextLine(player.getActiveQuest()[0].getNpc().get(0).getDialogue(), dialogueBoxWidth-60);
+				player.setPlayerNotes(player.getPlayerNotes()+player.getActiveQuest()[0].getNpc().get(0).getDialogue());
+			}
+			dialogueTray.setActive(true);
+			enableOrDisableMap(false);
+		}
+		if(pushcart.isMousePressed())
+		{
+			if (player.getActiveQuest()[0]==null  || !(player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("supermarket")))
+			{
+				dialogueText.nextLine("I used to ride on one of these",dialogueBoxWidth);
+			}
+			
+			else if (player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("supermarket"))
+			{
+				dialogueText.nextLine("Let's see, according to the manager this was bought for " +player.getActiveQuest()[0].getQuestInformation().get("equipment").getValue()+"", dialogueBoxWidth-60);
+				player.setPlayerNotes(player.getPlayerNotes()+"Let's see, according to the manager this was bought for " +player.getActiveQuest()[0].getQuestInformation().get("equipment").getValue()+"");
+			}
+			dialogueTray.setActive(true);
+			enableOrDisableMap(false);
 		}
 		if(records.isMousePressed())
 		{
-			player.setLocation(0, 0);
+			//TODO: use hashmap and dialogue
+			dialogueText.nextLine("Better not touch it",dialogueBoxWidth);
+			dialogueTray.setActive(true);
+			enableOrDisableMap(false);
 		}
 	}
 	
 	private void enableOrDisableMap(boolean visible)
 	{
-		welcome.setVisible(visible);
-		rightShelfInventory.setVisible(visible);
-		leftShelfInventory.setVisible(visible);
-		freezerInventory.setVisible(visible);
-		boyEmployee.setVisible(visible);
-		girlEmployee.setVisible(visible);
-		records.setVisible(visible);
+		welcome.setEnabled(visible);
+		rightShelfInventory.setEnabled(visible);
+		leftShelfInventory.setEnabled(visible);
+		freezerInventory.setEnabled(visible);
+		boyEmployee.setEnabled(visible);
+		girlEmployee.setEnabled(visible);
+		records.setEnabled(visible);
+		answer.setEnabled(!visible);
+		submitButtonImage.setActive(!visible);
 	}
 	
+	private void dialoguePrinter(Graphics2D g, int x, int y) {
+		for (int i=0;i<dialogueText.getDialogueText().size();i++)
+		{
+			text.drawString(g,dialogueText.getDialogueText().get(i) , x, y+i*10);
+		}
+	}
 	
-
+	private void submitAnswer()
+	{
+		if(click())
+		{
+	        if(submitButtonImage.getImage().equals(submitButtonHighlight) && submitButtonImage.isActive())
+	        {
+	            if (answer.getText().toLowerCase().equals(player.getActiveQuest()[0].getAnswer()))
+	            {
+	            	//TODO: show success
+	            	System.out.println("success");
+	            	updatePlayerAccount.updateLevel(player.getActiveQuest()[0].getSkillLevel(),player.getPlayerID(),player.getActiveQuest()[0].getSkillID());
+	            	updatePlayerAccount.removeQuest(player.getPlayerID());
+	            	player.getActiveQuest()[0] = null;
+	            	
+	            }
+	            else
+	            {
+	            	//show failure
+	            	System.out.println("failure");
+	            	updatePlayerAccount.removeQuest(player.getPlayerID());
+	            	player.getActiveQuest()[0] = null;
+	            }
+	            	
+	        }
+		}
+	}
 }

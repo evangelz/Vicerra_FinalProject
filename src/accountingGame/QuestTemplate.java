@@ -8,12 +8,16 @@ import accountingGame.npc.QuestItem;
 
 public class QuestTemplate {
 	
+	private int questID;
 	private String answer;
 	private String requirement;
 	private String questTitle;
 	private HashMap<String, QuestItem> questInformation = new HashMap();
 	private ArrayList<NPC> npc = new ArrayList();
 	private String type;
+	private String questStory;
+	private int skillLevel;
+	private int skillID;
 	
 	public String getAnswer() {
 		return answer;
@@ -51,6 +55,30 @@ public class QuestTemplate {
 	}
 	public void setQuestInformation(HashMap<String, QuestItem> questInformation) {
 		this.questInformation = questInformation;
+	}
+	public String getQuestStory() {
+		return questStory;
+	}
+	public void setQuestStory(String questStory) {
+		this.questStory = questStory;
+	}
+	public int getQuestID() {
+		return questID;
+	}
+	public void setQuestID(int questID) {
+		this.questID = questID;
+	}
+	public int getSkillLevel() {
+		return skillLevel;
+	}
+	public void setSkillLevel(int skillLevel) {
+		this.skillLevel = skillLevel;
+	}
+	public int getSkillID() {
+		return skillID;
+	}
+	public void setSkillID(int skillID) {
+		this.skillID = skillID;
 	}
 	
 }
