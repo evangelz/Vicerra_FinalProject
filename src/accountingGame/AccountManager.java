@@ -145,10 +145,16 @@ public class AccountManager {
 		}
 		try {
 			int update;
+<<<<<<< HEAD
 			updateQuest = conn.prepareStatement("insert active_quest values(?,?)");
 			updateQuest.setString(1, playerID+"" );
 			updateQuest.setString(2,activeQuestID+"");
 			
+=======
+			updateQuest = conn.prepareStatement("update active_quest set quest_id = ? where player_id = ?");
+			updateQuest.setString(1,activeQuestID+"");
+			updateQuest.setString(2, playerID+"" );
+>>>>>>> origin/master
 			update = updateQuest.executeUpdate();
 			
 		} catch (SQLException e) {
@@ -222,7 +228,11 @@ public class AccountManager {
 		try {
 			ResultSet resultSet=null;
 			ResultSetMetaData resultSetMetaData;
+<<<<<<< HEAD
 			pickQuest = conn.prepareStatement("select * from player_account A inner join active_quest B on B.player_id = A.player_id inner join quest C where C.quest_id = B.quest_id and A.player_id = ?");
+=======
+			pickQuest = conn.prepareStatement("select * from active_quest A inner join quest B on A.quest_id = B.quest_id inner join player_account C on C.player_id = A.player_id where C.player_id = ?");
+>>>>>>> origin/master
 			pickQuest.setString(1,playerID+"");
 			resultSet = pickQuest.executeQuery();
 			if(resultSet.first())
@@ -233,9 +243,15 @@ public class AccountManager {
 				quest.setQuestTitle(resultSet.getString("quest_name"));
 				quest.setRequirement(resultSet.getString("quest_requirement"));
 				quest.setQuestStory(resultSet.getString("quest_story"));
+<<<<<<< HEAD
 				for (int i = 11;i<=24;i++)
 				{
 					System.out.println(resultSet.getInt(i));
+=======
+				for (int i = 7;i<=20;i++)
+				{
+					//System.out.println(resultSet.getInt(i));
+>>>>>>> origin/master
 					if (resultSet.getInt(i)!=0)
 					{
 						

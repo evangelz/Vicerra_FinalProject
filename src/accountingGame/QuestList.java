@@ -75,7 +75,11 @@ public class QuestList {
 		try {
 			ResultSet resultSet=null;
 			ResultSetMetaData resultSetMetaData;
+<<<<<<< HEAD
 			pickQuest = conn.prepareStatement("select * from player_account A inner join player_skill_level B on A.player_id = B.player_id inner join quest C on B.skill_id = C.skill_id where C.skill_level = B.skill_level and B.player_id = ?");
+=======
+			pickQuest = conn.prepareStatement("select * from quest A inner join player_skill_level B on A.skill_id = B.skill_id and A.skill_level = B.skill_level inner join player_account C on B.player_id = C.player_id where C.player_id = ?");
+>>>>>>> origin/master
 			pickQuest.setString(1,playerID+"");
 			resultSet = pickQuest.executeQuery();
 			while(resultSet.next())
@@ -86,7 +90,11 @@ public class QuestList {
 				quest.setQuestID(resultSet.getInt("quest_id"));
 				quest.setRequirement(resultSet.getString("quest_requirement"));
 				quest.setQuestStory(resultSet.getString("quest_story"));
+<<<<<<< HEAD
 				for (int i = 12;i<=25;i++)
+=======
+				for (int i = 5;i<=18;i++)
+>>>>>>> origin/master
 				{
 					if (resultSet.getInt(i)!=0)
 					{
