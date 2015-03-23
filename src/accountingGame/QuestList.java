@@ -110,6 +110,8 @@ public class QuestList {
 				npc.setNPCName(resultSet.getString("npc"));
 				npc.setDialogue(resultSet.getString("dialogue"));
 				quest.setAnswer(resultSet.getString("quest_answer"));
+				quest.setSkillLevel(resultSet.getInt("skill_level"));
+				quest.setSkillID(resultSet.getInt("skill_id"));
 				quest.getNpc().add(npc);
 				availableQuestList.add(quest);
 			}

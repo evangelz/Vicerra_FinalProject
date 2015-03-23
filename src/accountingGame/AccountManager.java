@@ -185,6 +185,9 @@ public class AccountManager {
 	public void updateLevel(int activeQuestSkillLevel, int playerID, int skillID)
 	{
 		PreparedStatement updateQuest = null;
+		System.out.println(activeQuestSkillLevel);
+		System.out.println(playerID);
+		System.out.println(skillID);
 		// Connect to MySQL
 		Connection conn = null;
 		try {
@@ -198,7 +201,7 @@ public class AccountManager {
 		try {
 			int update;
 			updateQuest = conn.prepareStatement("update player_skill_level set skill_level = ? where player_id = ? and skill_id = ?");
-			updateQuest.setString(1,(activeQuestSkillLevel+1)+"");
+			updateQuest.setString(1,activeQuestSkillLevel+"");
 			updateQuest.setString(2, playerID+"");
 			updateQuest.setString(3,skillID+"");
 			update = updateQuest.executeUpdate();
@@ -261,7 +264,7 @@ public class AccountManager {
 				npc.setDialogue(resultSet.getString("dialogue"));
 				quest.setAnswer(resultSet.getString("quest_answer"));
 				quest.setSkillLevel(resultSet.getInt("skill_level"));
-				quest.setSkillLevel(resultSet.getInt("skill_id"));
+				quest.setSkillID(resultSet.getInt("skill_id"));
 				quest.getNpc().add(npc);
 				return quest;
 			}
@@ -276,7 +279,7 @@ public class AccountManager {
 		
 		
 	}
-	
+
 	public void insertSkill(int skillLevel, int skillID)
 	{
 		PreparedStatement addSkill = null;

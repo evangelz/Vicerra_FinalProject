@@ -667,7 +667,7 @@ public class World extends GameObject {
 	            	System.out.println("success");
 	            	enableQuestComplete(true);
 	            	enableQuestSlot(false);
-	            	updatePlayerAccount.updateLevel(player.getActiveQuest()[0].getSkillLevel(),player.getPlayerID(),player.getActiveQuest()[0].getSkillID());
+	            	updatePlayerAccount.updateLevel(player.getActiveQuest()[0].getSkillLevel()+1,player.getPlayerID(),player.getActiveQuest()[0].getSkillID());
 	            	updatePlayerAccount.removeQuest(player.getPlayerID());
 	            	player.getActiveQuest()[0] = null;
 	            	

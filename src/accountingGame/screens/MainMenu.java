@@ -51,6 +51,7 @@ public class MainMenu extends GameObject {
 		frame = new FrameWork(bsInput, 1024,780);
 		frame.add(logInButton);
 		frame.add(signUpButton);
+		frame.add(signUpButtonSmaller);
 		
 		accountUsername = new TTextField("",390,218,388,33);
 		accountPassword = new TPasswordField("",390,266,388,33);
@@ -92,7 +93,6 @@ public class MainMenu extends GameObject {
 		signUpScreenButton = new Sprite(signUpPopUpButton,400,350);
 		signUpPopUpButtonHighlight =getImage("images/PopupWindow_SignUp2.png");
 		signUpScreenButtonRectangle = new Rectangle(400,350,167,50);
-		
 
 		accountManager = new AccountManager();
 		
@@ -168,7 +168,11 @@ public class MainMenu extends GameObject {
             }
             if(signUpButtonSmaller.isMousePressed())
             {
-            	accountManager.createAccount(username.getText(),org.apache.commons.codec.digest.DigestUtils.sha256Hex(password.getPasswordText()));
+            	System.out.println("ok");
+            	accountManager.createAccount(accountUsername.getText(),org.apache.commons.codec.digest.DigestUtils.sha256Hex(accountPassword.getPasswordText()));
+            	accountManager.checkLogIn(accountUsername.getText(),org.apache.commons.codec.digest.DigestUtils.sha256Hex(accountPassword.getPasswordText()));
+            	accountManager.insertSkill(1, 1);
+            	accountManager.setUserPassMatched(false);
             	enableOrDisable(false);
             }
 	}
@@ -202,11 +206,13 @@ public class MainMenu extends GameObject {
 	{
 		if (signUpScreen.isActive())
 		{
+			accountPassword.render(g);
 			signUpScreenExit.render(g);
 			signUpScreen.render(g);
 			signUpScreenButton.render(g);
+			signUpButtonSmaller.render(g);
 			accountUsername.render(g);
-			accountPassword.render(g);
+			
 		}
 		
 	}
@@ -225,6 +231,7 @@ public class MainMenu extends GameObject {
 		accountPassword.setVisible(visible);
 		accountUsername.setText("");
 		accountPassword.setText("");
+		signUpButtonSmaller.setEnabled(visible);
 		signUpScreenExit.setVisible(visible);
 		logInButton.setVisible(!visible);
 		signUpButton.setVisible(!visible);
