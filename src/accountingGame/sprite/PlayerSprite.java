@@ -4,14 +4,13 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 
 import accountingGame.QuestTemplate;
-import accountingGame.screens.SkillTree;
+
 
 import com.golden.gamedev.object.Sprite;
 
 public class PlayerSprite extends Sprite{
 	
 	private int playerID;
-	private SkillTree skillLevel;
 	private int questID;
 	private QuestTemplate[] activeQuest = new QuestTemplate[1];
 	private String playerNotes;
@@ -31,13 +30,6 @@ public class PlayerSprite extends Sprite{
 		this.playerLeft = playerLeft;
 	}
 	
-	public SkillTree getSkillLevel() {
-		return skillLevel;
-	}
-
-	public void setSkillLevel(SkillTree skillLevel) {
-		this.skillLevel = skillLevel;
-	}
 
 	public void changeDirection(int key)
 	{

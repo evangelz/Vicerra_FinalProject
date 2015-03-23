@@ -122,7 +122,7 @@ public class AccountManager {
 			int update;
 			signUp = conn.prepareStatement("update player_account set quest_notes = ? where player_id = ?");
 			signUp.setString(1,playerNotes);
-			signUp.setString(1,playerID+"");
+			signUp.setString(2,playerID+"");
 			update = signUp.executeUpdate();
 			
 		} catch (SQLException e) {
@@ -275,6 +275,32 @@ public class AccountManager {
 		}
 		
 		
+	}
+	
+	public void insertSkill(int skillLevel, int skillID)
+	{
+		PreparedStatement addSkill = null;
+		// Connect to MySQL
+		Connection conn = null;
+		try {
+			conn = this.getConnection();
+			System.out.println("Connected to database");
+		} catch (SQLException e) {
+			System.out.println("ERROR: Could not connect to the database");
+			e.printStackTrace();
+			return;
+		}
+		try {
+			int create;
+			addSkill = conn.prepareStatement("insert player_skill_level (skill_level, skill_id, player_id) values(?,?,?)");
+			addSkill.setString(1,skillLevel+"");
+			addSkill.setString(2,skillID+"");
+			addSkill.setString(3,playerID+"");
+			create = addSkill.executeUpdate();
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public boolean isUserPassMatched() {

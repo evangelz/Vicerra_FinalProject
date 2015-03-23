@@ -47,7 +47,7 @@ public class BarberShop extends GameObject {
 	private AccountManager updatePlayerAccount;
 	
 	private PlayerSprite player;
-	private SkillTree skillTree;
+
 	
 	private SpriteGroup UI_POPUPS;
 	private SpriteGroup PLAYER;
@@ -137,7 +137,7 @@ public class BarberShop extends GameObject {
 		submitButtonRectangle = new Rectangle(185,562,201,60);
 		submitButtonImage.setActive(false);
 		
-		skillTree = new SkillTree();
+	
 		try {
 			player = Session.getCurrentPlayer();
 		} catch (Exception e) {

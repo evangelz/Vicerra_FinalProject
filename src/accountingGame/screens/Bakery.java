@@ -47,7 +47,7 @@ public class Bakery extends GameObject {
 	private AccountManager updatePlayerAccount;
 
 	private PlayerSprite player;
-	private SkillTree skillTree;
+
 	
 	private SpriteGroup UI_POPUPS;
 	private SpriteGroup PLAYER;
@@ -137,8 +137,7 @@ public class Bakery extends GameObject {
 		submitButtonImage = new Sprite(submitButton,185,562);
 		submitButtonRectangle = new Rectangle(185,562,201,60);
 		submitButtonImage.setActive(false);
-		
-		skillTree = new SkillTree();
+
 		
 		try {
 			player = Session.getCurrentPlayer();

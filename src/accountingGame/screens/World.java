@@ -41,24 +41,26 @@ public class World extends GameObject {
 	
 	Background town;
 	Rectangle questBox, notesBox, exitBox;
-	Rectangle exitPopUpYesButtonRectangle, exitPopUpNoButtonRectangle,submitButtonRectangle;
+	Rectangle exitPopUpYesButtonRectangle, exitPopUpNoButtonRectangle,submitButtonRectangle, okButtonRectangle;
 	Rectangle profileButtonRectangle, questButtonRectangle, notesButtonRectangle,referenceButtonRectangle, exitButtonRectangle, questBoardRectangle;
 	Rectangle questSlot1Rectangle, questSlot2Rectangle, questSlot3Rectangle, questSlot4Rectangle;
+	Rectangle questCompleteOkRectangle, questFailedOkRectangle;
 	
 	BufferedImage questButton, questButtonHighlight, notesButton, notesButtonHighlight,exitButton, exitButtonHighlight, submitButton,submitButtonHighlight;
-	BufferedImage questPopUp, notesPopUp,exitPopUp, questBoardPopUp;
+	BufferedImage questPopUp, notesPopUp,exitPopUp, questBoardPopUp, questErrorPopUp,okButton,okButtonHighlight,questCompletePopUp,questFailedPopUp;
 	BufferedImage questSlot1, questSlot2, questSlot3,questSlot4, questSlot1Highlight, questSlot2Highlight, questSlot3Highlight,questSlot4Highlight;
 	BufferedImage exitPopUpYesButton, exitPopUpNoButton, exitPopUpNoButtonHighlight, exitPopUpYesButtonHighlight;
-	
+	BufferedImage questCompleteOk, questCompleteOkHighlight, questFailedOk, questFailedOkHighlight;
+	Sprite questCompleteOkImage, questFailedOkImage;
 	Sprite questSlot1Image,questSlot2Image,questSlot3Image,questSlot4Image, questSlot1ImageHighlight,questSlot2ImageHighlight,questSlot3ImageHighlight,questSlot4ImageHighlight;
-	Sprite questScreen, notesScreen, exitScreen,uiTray, questBoardScreen,submitButtonImage;
+	Sprite questScreen, notesScreen, exitScreen,uiTray, questBoardScreen,submitButtonImage, questErrorScreen,okButtonImage,questCompleteScreen, questFailedScreen;
 	Sprite notesExit, exitYes, exitNo;
 	Sprite quest,notes,exit;
 	
 	private GameFont text;
 	boolean willPrint;
 	private PlayerSprite player;
-	private SkillTree skillTree;
+
 	
 	private SpriteGroup UI_POPUPS;
 	private SpriteGroup PLAYER;
@@ -123,6 +125,33 @@ public class World extends GameObject {
 		frame.add(questBoardExit);
 		questBoardExit.setVisible(false);
 		
+		questErrorPopUp = getImage("images/PopUpWindow_QuestAcceptError.png");
+		questErrorScreen = new Sprite(questErrorPopUp, 300,150);
+		questErrorScreen.setActive(false);
+		okButton = getImage("images/Button_Ok_Neutral.png");
+		okButtonHighlight = getImage("images/Button_Ok_Clicked.png");
+		okButtonImage = new Sprite(okButton, 464,304);
+		okButtonImage.setActive(false);
+		okButtonRectangle = new Rectangle(464,304,174,60);
+		
+		questCompletePopUp = getImage("images/PopUpWindow_QuestComplete.png");
+		questCompleteScreen = new Sprite(questCompletePopUp, 300,300);
+		questCompleteScreen.setActive(false);
+		questCompleteOk = getImage("images/Button_Ok_Neutral.png");
+		questCompleteOkHighlight = getImage("images/Button_Ok_Clicked.png");
+		questCompleteOkImage = new Sprite(okButton, 467,394);
+		questCompleteOkImage.setActive(false);
+		questCompleteOkRectangle = new Rectangle(467,394,174,60);
+		
+		questFailedPopUp = getImage("images/PopUpWindow_QuestFailed.png");
+		questFailedScreen = new Sprite(questFailedPopUp,300,300);
+		questFailedScreen.setActive(false);
+		questFailedOk = getImage("images/Button_Ok_Clicked.png");
+		questFailedOkHighlight = getImage("images/Button_Ok_Neutral.png");
+		questFailedOkImage = new Sprite(okButton, 467,394);
+		questFailedOkImage.setActive(false);
+		questFailedOkRectangle = new Rectangle(467,394,174,60);
+		
 		questSlot1 = getImage("images/Button_Quest1_Neutral.png");
 		questSlot1Image = new Sprite(questSlot1,questSlotXPosition,questSlotYPosition);
 		questSlot1Highlight = getImage("images/Button_Quest1_Clicked.png");
@@ -174,7 +203,7 @@ public class World extends GameObject {
 		submitButtonRectangle = new Rectangle(185,562,201,60);
 		submitButtonImage.setActive(false);
 		
-		skillTree = new SkillTree();
+		
 		try {
 			player = Session.getCurrentPlayer();
 		} catch (Exception e) {
@@ -216,6 +245,7 @@ public class World extends GameObject {
 		exit.update(elapsedTime);
 		highlightButton();
 		highlightQuestSlot();
+		highlightOkButton();
 		popUp();
 		UI_POPUPS.update(elapsedTime);
 		PLAYER.update(elapsedTime);
@@ -240,7 +270,37 @@ public class World extends GameObject {
 		showClosePopUp(g);
 		submitAnswer();
 	}
-
+	
+	private void highlightOkButton()
+	{
+		Point p = new Point (getMouseX(), getMouseY());
+		if(okButtonRectangle.contains(p))
+        {
+        	okButtonImage.setImage(okButtonHighlight);
+        	questFailedOkImage.setImage(questFailedOk);
+        	questCompleteOkImage.setImage(questCompleteOk);
+        }
+        else if(questCompleteOkRectangle.contains(p) && questCompleteOkImage.isActive())
+        {
+        	questCompleteOkImage.setImage(questCompleteOkHighlight);
+        	questFailedOkImage.setImage(questFailedOk);
+        	okButtonImage.setImage(okButton);
+        	
+        }
+        else if(questFailedOkRectangle.contains(p) && questFailedOkImage.isActive())
+        {
+        	questFailedOkImage.setImage(questFailedOkHighlight);
+        	questCompleteOkImage.setImage(questCompleteOk);
+        	okButtonImage.setImage(okButton);
+        }
+        else
+        {
+        	questFailedOkImage.setImage(questFailedOk);
+        	questCompleteOkImage.setImage(questCompleteOk);
+        	okButtonImage.setImage(okButton);
+        
+        }
+	}
 	private void highlightButton() {
 		Point p = new Point (getMouseX(), getMouseY());
         if(questButtonRectangle.contains(p))
@@ -283,28 +343,28 @@ public class World extends GameObject {
 	
 	private void highlightQuestSlot() {
 		Point p = new Point (getMouseX(), getMouseY());
-        if(questSlot1Rectangle.contains(p))
+        if(questSlot1Rectangle.contains(p) && questSlot1Image.isActive())
         {
         	questSlot1Image.setImage(questSlot1Highlight);
         	questSlot2Image.setImage(questSlot2);
         	questSlot3Image.setImage(questSlot3);
         	questSlot4Image.setImage(questSlot4);
         }
-        else if(questSlot2Rectangle.contains(p))
+        else if(questSlot2Rectangle.contains(p) && questSlot2Image.isActive())
         {
         	questSlot1Image.setImage(questSlot1);
         	questSlot2Image.setImage(questSlot2Highlight);
         	questSlot3Image.setImage(questSlot3);
         	questSlot4Image.setImage(questSlot4);
         }
-        else if(questSlot3Rectangle.contains(p))
+        else if(questSlot3Rectangle.contains(p) && questSlot3Image.isActive())
         {
         	questSlot1Image.setImage(questSlot1);
         	questSlot2Image.setImage(questSlot2);
         	questSlot3Image.setImage(questSlot3Highlight);
         	questSlot4Image.setImage(questSlot4);
         }
-        else if(questSlot4Rectangle.contains(p))
+        else if(questSlot4Rectangle.contains(p) && questSlot4Image.isActive())
         {
         	questSlot1Image.setImage(questSlot1);
         	questSlot2Image.setImage(questSlot2);
@@ -322,7 +382,7 @@ public class World extends GameObject {
 	
 	private void pickQuest()
 	{
-		if(click())
+		if(click() && questBoardScreen.isActive())
 		{
             if(questSlot1Image.getImage().equals(questSlot1Highlight))
             {
@@ -359,6 +419,8 @@ public class World extends GameObject {
 		  {
 			  //TODO : error message
 			  System.out.println("error");
+			  questErrorScreen.setActive(true);
+			  enableOrDisableMap(false);
 		  }
 	}
 	
@@ -383,6 +445,11 @@ public class World extends GameObject {
 	            	exitYes.setActive(true);
 					exitNo.setActive(true);
 	            	enableOrDisableMap(false);
+	            }
+	            if(okButtonImage.getImage().equals(okButtonHighlight))
+	            {
+	            	questErrorScreen.setActive(false);
+	            	enableOrDisableMap(true);
 	            }
 	            if(exitNo.getImage().equals(exitPopUpNoButtonHighlight))
 				{
@@ -473,6 +540,22 @@ public class World extends GameObject {
 			dialoguePrinter(g,questSlotXPosition+15,questRequirementYPosition+226);	
 			dialogueText.nextLine(questList.getAvailableQuestList().get(3).getRequirement(), 349);
 			dialoguePrinter(g,questSlotXPosition+15,questRequirementYPosition+339);	
+			
+		}
+		if (questErrorScreen.isActive())
+		{
+			questErrorScreen.render(g);
+			okButtonImage.render(g);
+		}
+		if (questCompleteScreen.isActive())
+		{
+			questCompleteScreen.render(g);
+			questCompleteOkImage.render(g);
+		}
+		if(questFailedScreen.isActive())
+		{
+			questFailedScreen.render(g);
+			questFailedOkImage.render(g);
 		}
 		if(exitScreen.isActive())
 		{
@@ -554,13 +637,15 @@ public class World extends GameObject {
 	{
 		if(click())
 		{
-	        if(submitButtonImage.getImage().equals(submitButtonHighlight) && submitButtonImage.isActive())
+	        if(submitButtonImage.getImage().equals(submitButtonHighlight) && submitButtonImage.isActive() && player.getActiveQuest()[0]!= null)
 	        {
 	            if (answer.getText()!=null && answer.getText().toLowerCase().equals(player.getActiveQuest()[0].getAnswer()))
 
 	            {
 	            	//TODO: show success
 	            	System.out.println("success");
+	            	enableQuestComplete(true);
+	            	enableQuestSlot(false);
 	            	updatePlayerAccount.updateLevel(player.getActiveQuest()[0].getSkillLevel(),player.getPlayerID(),player.getActiveQuest()[0].getSkillID());
 	            	updatePlayerAccount.removeQuest(player.getPlayerID());
 	            	player.getActiveQuest()[0] = null;
@@ -570,12 +655,29 @@ public class World extends GameObject {
 	            {
 	            	//show failure
 	            	System.out.println("failure");
+	            	enableQuestComplete(false);
+	            	enableQuestSlot(false);
 	            	updatePlayerAccount.removeQuest(player.getPlayerID());
 	            	player.getActiveQuest()[0] = null;
 	            }
 	            	
 	        }
 		}
+	}
+
+	private void enableQuestComplete(boolean enable) {
+		questCompleteScreen.setActive(enable);
+		questCompleteOkImage.setActive(enable);
+		questFailedScreen.setActive(!enable);
+		questFailedOkImage.setActive(!enable);
+	}
+
+	private void enableQuestSlot(boolean enable) {
+		
+		questSlot1Image.setActive(enable);
+		questSlot2Image.setActive(enable);
+		questSlot3Image.setActive(enable);
+		questSlot4Image.setActive(enable);
 	}
 
 }
