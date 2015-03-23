@@ -20,13 +20,13 @@ public class TextManager {
 			{
 				String line = text.charAt(i)+"";
 				breakTextAt=i;
-				if (line.equals(" "))
+				if (line.equals(" ") || line.equals("."))
 				{
 					breakTextAt = i+1;
 				}
 				currentPixel += line.length()*8;
 				
-				if (currentPixel >= textBoxWidth)
+				if ((currentPixel >= textBoxWidth)||line.equals("."))
 				{
 					i = breakTextAt;
 					dialogueText.add(text.substring(startTextIndex,breakTextAt));

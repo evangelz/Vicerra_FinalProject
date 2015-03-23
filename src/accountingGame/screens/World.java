@@ -326,7 +326,7 @@ public class World extends GameObject {
         	exitYes.setImage(exitPopUpYesButton);
         
         }
-        else if(submitButtonRectangle.contains(p))
+        else if(submitButtonRectangle.contains(p) && submitButtonImage.isActive())
         {
         	submitButtonImage.setImage(submitButtonHighlight);
         }
@@ -409,6 +409,7 @@ public class World extends GameObject {
 		if(player.getActiveQuest()[0] == null)
 		  {
 			questScreen.setActive(true);
+			submitButtonImage.setActive(true);
         	player.getActiveQuest()[0] = questList.getAvailableQuestList().get(i);
         	questList.getAvailableQuestList().add(questList.getAvailableQuestList().remove(i));
 
@@ -420,6 +421,7 @@ public class World extends GameObject {
 			  //TODO : error message
 			  System.out.println("error");
 			  questErrorScreen.setActive(true);
+			  enableQuestSlot(false);
 			  enableOrDisableMap(false);
 		  }
 	}
@@ -431,6 +433,7 @@ public class World extends GameObject {
 	            if(quest.getImage().equals(questButtonHighlight))
 	            {
 	            	questScreen.setActive(true);
+	            	submitButtonImage.setActive(true);
 	            	enableOrDisableMap(false);
 	            	
 	            }
@@ -449,9 +452,24 @@ public class World extends GameObject {
 	            if(okButtonImage.getImage().equals(okButtonHighlight))
 	            {
 	            	questErrorScreen.setActive(false);
-	            	enableOrDisableMap(true);
+	            	enableQuestSlot(true);
+	            	
 	            }
-	            if(exitNo.getImage().equals(exitPopUpNoButtonHighlight))
+	            if(questCompleteOkImage.getImage().equals(questCompleteOkHighlight))
+	            {
+	            	questCompleteScreen.setActive(false);
+	            	questCompleteOkImage.setActive(false);
+	            	enableQuestSlot();
+	            	
+	            }
+	            if(questFailedOkImage.getImage().equals(questFailedOkHighlight))
+	            {
+	            	questFailedScreen.setActive(false);
+	            	questFailedOkImage.setActive(false);
+	            	enableQuestSlot();
+	            	
+	            }
+	            if(exitNo.getImage().equals(exitPopUpNoButtonHighlight) && exitNo.isActive())
 				{
 					exitScreen.setActive(false);
 					exitYes.setActive(false);
@@ -467,6 +485,8 @@ public class World extends GameObject {
 				
 			
 	}
+
+
 	
 	private void closePopUp() {
 		if (questScreenExit.isMousePressed())
@@ -474,7 +494,7 @@ public class World extends GameObject {
 			questScreen.setActive(false);
 			questScreenExit.setVisible(false);
 			answer.setText("answer");
-
+			submitButtonImage.setActive(false);
 			enableOrDisableMap(true);	
 
 		}
@@ -551,11 +571,13 @@ public class World extends GameObject {
 		{
 			questCompleteScreen.render(g);
 			questCompleteOkImage.render(g);
+			enableOrDisableMap(false);
 		}
 		if(questFailedScreen.isActive())
 		{
 			questFailedScreen.render(g);
 			questFailedOkImage.render(g);
+			enableOrDisableMap(false);
 		}
 		if(exitScreen.isActive())
 		{
@@ -629,7 +651,6 @@ public class World extends GameObject {
 		questBoard.setEnabled(visible);
 		house.setEnabled(visible);
 		answer.setEnabled(!visible);
-		submitButtonImage.setActive(!visible);
 	}
 	
 	
@@ -637,7 +658,7 @@ public class World extends GameObject {
 	{
 		if(click())
 		{
-	        if(submitButtonImage.getImage().equals(submitButtonHighlight) && submitButtonImage.isActive() && player.getActiveQuest()[0]!= null)
+	        if(submitButtonImage.getImage().equals(submitButtonHighlight) && player.getActiveQuest()[0]!= null)
 	        {
 	            if (answer.getText()!=null && answer.getText().toLowerCase().equals(player.getActiveQuest()[0].getAnswer()))
 
@@ -664,7 +685,7 @@ public class World extends GameObject {
 	        }
 		}
 	}
-
+	
 	private void enableQuestComplete(boolean enable) {
 		questCompleteScreen.setActive(enable);
 		questCompleteOkImage.setActive(enable);
@@ -679,5 +700,11 @@ public class World extends GameObject {
 		questSlot3Image.setActive(enable);
 		questSlot4Image.setActive(enable);
 	}
-
+	
+	private void enableQuestSlot() {
+		if (questBoardScreen.isActive())
+		{
+			enableQuestSlot(true);
+		}
+	}
 }

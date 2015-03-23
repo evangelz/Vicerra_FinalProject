@@ -35,12 +35,16 @@ public class Supermarket extends GameObject {
 	
 	Background town;
 	Rectangle questBox, notesBox, exitBox;
-	Rectangle exitPopUpYesButtonRectangle, exitPopUpNoButtonRectangle,submitButtonRectangle;
+	Rectangle exitPopUpYesButtonRectangle, exitPopUpNoButtonRectangle,submitButtonRectangle, okButtonRectangle;
 	Rectangle profileButtonRectangle, questButtonRectangle, notesButtonRectangle,referenceButtonRectangle, exitButtonRectangle, questBoardRectangle;
+	Rectangle questCompleteOkRectangle, questFailedOkRectangle;
+	
 	BufferedImage questButton, questButtonHighlight, notesButton, notesButtonHighlight,exitButton, exitButtonHighlight,submitButton,submitButtonHighlight;
 	BufferedImage questPopUp, notesPopUp,exitPopUp,dialogueBox;
 	BufferedImage exitPopUpYesButton, exitPopUpNoButton, exitPopUpNoButtonHighlight, exitPopUpYesButtonHighlight;
-	Sprite questScreen, notesScreen, exitScreen,uiTray,dialogueTray,submitButtonImage;
+	BufferedImage questCompleteOk, questCompleteOkHighlight, questFailedOk, questFailedOkHighlight,questCompletePopUp,questFailedPopUp;
+	Sprite questCompleteOkImage, questFailedOkImage;
+	Sprite questScreen, notesScreen, exitScreen,uiTray,dialogueTray,submitButtonImage,questCompleteScreen, questFailedScreen;
 	Sprite questExit,notesExit, exitYes, exitNo;
 	Sprite quest,notes,exit;
 	
@@ -116,6 +120,24 @@ public class Supermarket extends GameObject {
 		frame.add(notesScreenExit);
 		notesScreenExit.setVisible(false);
 		
+		questCompletePopUp = getImage("images/PopUpWindow_QuestComplete.png");
+		questCompleteScreen = new Sprite(questCompletePopUp, 300,300);
+		questCompleteScreen.setActive(false);
+		questCompleteOk = getImage("images/Button_Ok_Neutral.png");
+		questCompleteOkHighlight = getImage("images/Button_Ok_Clicked.png");
+		questCompleteOkImage = new Sprite(questCompleteOk, 467,394);
+		questCompleteOkImage.setActive(false);
+		questCompleteOkRectangle = new Rectangle(467,394,174,60);
+		
+		questFailedPopUp = getImage("images/PopUpWindow_QuestFailed.png");
+		questFailedScreen = new Sprite(questFailedPopUp,300,300);
+		questFailedScreen.setActive(false);
+		questFailedOk = getImage("images/Button_Ok_Clicked.png");
+		questFailedOkHighlight = getImage("images/Button_Ok_Neutral.png");
+		questFailedOkImage = new Sprite(questFailedOk, 467,394);
+		questFailedOkImage.setActive(false);
+		questFailedOkRectangle = new Rectangle(467,394,174,60);
+		
 		exitPopUp = getImage("images/PopupWindow_LogOut.png");
 		exitScreen = new Sprite(exitPopUp,100,0);
 		exitPopUpYesButton = getImage("images/Button_Yes_Neutral.png");
@@ -179,6 +201,7 @@ public class Supermarket extends GameObject {
 		notes.update(elapsedTime);
 		exit.update(elapsedTime);
 		highlightButton();
+		highlightOkButton();
 		popUp();
 		UI_POPUPS.update(elapsedTime);
 		PLAYER.update(elapsedTime);
@@ -202,7 +225,32 @@ public class Supermarket extends GameObject {
 		
 		
 	}
+	
+	private void highlightOkButton()
+	{
+		Point p = new Point (getMouseX(), getMouseY());
+		if(questCompleteOkRectangle.contains(p) && questCompleteOkImage.isActive())
+        {
+        	questCompleteOkImage.setImage(questCompleteOkHighlight);
+        	questFailedOkImage.setImage(questFailedOk);
+        
+        	
+        }
+        else if(questFailedOkRectangle.contains(p) && questFailedOkImage.isActive())
+        {
+        	questFailedOkImage.setImage(questFailedOkHighlight);
+        	questCompleteOkImage.setImage(questCompleteOk);
 
+        }
+        else
+        {
+        	questFailedOkImage.setImage(questFailedOk);
+        	questCompleteOkImage.setImage(questCompleteOk);
+
+        
+        }
+	}
+	
 	private void highlightButton() {
 		Point p = new Point (getMouseX(), getMouseY());
         if(questButtonRectangle.contains(p))
@@ -228,7 +276,7 @@ public class Supermarket extends GameObject {
         	exitYes.setImage(exitPopUpYesButton);
         
         }
-        else if(submitButtonRectangle.contains(p))
+        else if(submitButtonRectangle.contains(p) && submitButtonImage.isActive())
         {
         	submitButtonImage.setImage(submitButtonHighlight);
         }
@@ -250,6 +298,7 @@ public class Supermarket extends GameObject {
 	            if(quest.getImage().equals(questButtonHighlight))
 	            {
 	            	questScreen.setActive(true);
+	            	submitButtonImage.setActive(true);
 	            	enableOrDisableMap(false);
 	            	
 	            }
@@ -265,7 +314,19 @@ public class Supermarket extends GameObject {
 					exitNo.setActive(true);
 	            	enableOrDisableMap(false);
 	            }
-				if(exitNo.getImage().equals(exitPopUpNoButtonHighlight))
+	            if(questCompleteOkImage.getImage().equals(questCompleteOkHighlight))
+	            {
+	            	questCompleteScreen.setActive(false);
+	            	questCompleteOkImage.setActive(false);
+	            	
+	            }
+	            if(questFailedOkImage.getImage().equals(questFailedOkHighlight))
+	            {
+	            	questFailedScreen.setActive(false);
+	            	questFailedOkImage.setActive(false);
+	            	
+	            }
+				if(exitNo.getImage().equals(exitPopUpNoButtonHighlight) && exitNo.isActive())
 				{
 					exitScreen.setActive(false);
 					exitYes.setActive(false);
@@ -286,6 +347,7 @@ public class Supermarket extends GameObject {
 		{
 			questScreen.setActive(false);
 			questScreenExit.setVisible(false);
+			submitButtonImage.setActive(false);
 			enableOrDisableMap(true);
 			answer.setText("answer");
 			
@@ -330,6 +392,18 @@ public class Supermarket extends GameObject {
 			//text.drawString(g, "Cash is 1000 pesos", 102, 526);
 			dialoguePrinter(g, 102, 526);
 		}
+		if (questCompleteScreen.isActive())
+		{
+			questCompleteScreen.render(g);
+			questCompleteOkImage.render(g);
+			enableOrDisableMap(false);
+		}
+		if(questFailedScreen.isActive())
+		{
+			questFailedScreen.render(g);
+			questFailedOkImage.render(g);
+			enableOrDisableMap(false);
+		}
 		if(exitScreen.isActive())
 		{
 			exitScreen.render(g);
@@ -352,7 +426,7 @@ public class Supermarket extends GameObject {
 	{
 		if(welcome.isMousePressed())
 		{
-			dialogueText.nextLine("Please come back again",dialogueBoxWidth);
+			dialogueText.nextLine("Please come back again",dialogueBoxWidth-60);
 			updatePlayerAccount.updateAccount(player.getPlayerNotes(),player.getPlayerID());
 			parent.nextGameID = 1;
 			finish();
@@ -362,12 +436,12 @@ public class Supermarket extends GameObject {
 			
 			if (player.getActiveQuest()[0]==null  || !(player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("supermarket")))
 			{
-				dialogueText.nextLine("I better buy some eggs for breakfast tomorrow",dialogueBoxWidth);
+				dialogueText.nextLine("I better buy some eggs for breakfast tomorrow",dialogueBoxWidth-60);
 			}
 			else if (player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("supermarket"))
 			{
 				dialogueText.nextLine("Upon doing an inventory count, This would cost around " +player.getActiveQuest()[0].getQuestInformation().get("inventory").getValue()+"", dialogueBoxWidth-60);
-				player.setPlayerNotes(player.getPlayerNotes()+"Upon doing an inventory count, This would cost around " +player.getActiveQuest()[0].getQuestInformation().get("inventory").getValue()+"");
+				notesChecker("Upon doing an inventory count, This would cost around " +player.getActiveQuest()[0].getQuestInformation().get("inventory").getValue()+"");
 			}
 			dialogueTray.setActive(true);
 			enableOrDisableMap(false);
@@ -377,14 +451,14 @@ public class Supermarket extends GameObject {
 			
 			if (player.getActiveQuest()[0]==null  || !(player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("supermarket")))
 			{
-				dialogueText.nextLine("I better buy some eggs for breakfast tomorrow",dialogueBoxWidth);
+				dialogueText.nextLine("I better buy some eggs for breakfast tomorrow",dialogueBoxWidth-60);
 			}
 			else if (player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("supermarket"))
 			{
 				dialogueText.nextLine("You're here to do the request? talk to the May for more information ", dialogueBoxWidth-60);
-				player.setPlayerNotes(player.getPlayerNotes()+"BoyEmployee: You're here to do the request? talk to the May for more information ");
+				notesChecker("BoyEmployee: You're here to do the request? talk to the May for more information ");
 			}
-			dialogueText.nextLine("Welcome, if you need anything don't hesitate to ask",dialogueBoxWidth);
+			dialogueText.nextLine("Welcome, if you need anything don't hesitate to ask",dialogueBoxWidth-60);
 			dialogueTray.setActive(true);
 			enableOrDisableMap(false);
 		}
@@ -393,12 +467,12 @@ public class Supermarket extends GameObject {
 			
 			if (player.getActiveQuest()[0]==null  || !(player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("supermarket")))
 			{
-				dialogueText.nextLine("Welcome, How may I help you?",dialogueBoxWidth);
+				dialogueText.nextLine("Welcome, How may I help you?",dialogueBoxWidth-60);
 			}
 			else if (player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("supermarket"))
 			{
 				dialogueText.nextLine(player.getActiveQuest()[0].getNpc().get(0).getDialogue(), dialogueBoxWidth-60);
-				player.setPlayerNotes(player.getPlayerNotes()+player.getActiveQuest()[0].getNpc().get(0).getDialogue());
+				notesChecker(player.getActiveQuest()[0].getNpc().get(0).getDialogue());
 			}
 			dialogueTray.setActive(true);
 			enableOrDisableMap(false);
@@ -413,7 +487,7 @@ public class Supermarket extends GameObject {
 			else if (player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("supermarket"))
 			{
 				dialogueText.nextLine("Let's see, according to the manager this was bought for " +player.getActiveQuest()[0].getQuestInformation().get("equipment").getValue()+"", dialogueBoxWidth-60);
-				player.setPlayerNotes(player.getPlayerNotes()+"Let's see, according to the manager this was bought for " +player.getActiveQuest()[0].getQuestInformation().get("equipment").getValue()+"");
+				notesChecker("Let's see, according to the manager this was bought for " +player.getActiveQuest()[0].getQuestInformation().get("equipment").getValue()+"");
 			}
 			dialogueTray.setActive(true);
 			enableOrDisableMap(false);
@@ -421,9 +495,16 @@ public class Supermarket extends GameObject {
 		if(records.isMousePressed())
 		{
 			//TODO: use hashmap and dialogue
-			dialogueText.nextLine("Better not touch it",dialogueBoxWidth);
+			dialogueText.nextLine("Better not touch it",dialogueBoxWidth-60);
 			dialogueTray.setActive(true);
 			enableOrDisableMap(false);
+		}
+	}
+	
+	private void notesChecker(String note) {
+		if (!(player.getPlayerNotes().contains(note)))
+		{
+				player.setPlayerNotes(player.getPlayerNotes()+note+".");
 		}
 	}
 	
@@ -437,7 +518,7 @@ public class Supermarket extends GameObject {
 		girlEmployee.setEnabled(visible);
 		records.setEnabled(visible);
 		answer.setEnabled(!visible);
-		submitButtonImage.setActive(!visible);
+		
 	}
 	
 	private void dialoguePrinter(Graphics2D g, int x, int y) {
@@ -451,12 +532,15 @@ public class Supermarket extends GameObject {
 	{
 		if(click())
 		{
-	        if(submitButtonImage.getImage().equals(submitButtonHighlight) && submitButtonImage.isActive())
+	        if(submitButtonImage.getImage().equals(submitButtonHighlight) && submitButtonImage.isActive() && player.getActiveQuest()[0]!= null)
 	        {
-	            if (answer.getText().toLowerCase().equals(player.getActiveQuest()[0].getAnswer()))
+	            if (answer.getText()!=null && answer.getText().toLowerCase().equals(player.getActiveQuest()[0].getAnswer()))
+
 	            {
 	            	//TODO: show success
 	            	System.out.println("success");
+	            	enableQuestComplete(true);
+	            
 	            	updatePlayerAccount.updateLevel(player.getActiveQuest()[0].getSkillLevel(),player.getPlayerID(),player.getActiveQuest()[0].getSkillID());
 	            	updatePlayerAccount.removeQuest(player.getPlayerID());
 	            	player.getActiveQuest()[0] = null;
@@ -466,11 +550,20 @@ public class Supermarket extends GameObject {
 	            {
 	            	//show failure
 	            	System.out.println("failure");
+	            	enableQuestComplete(false);
+	      
 	            	updatePlayerAccount.removeQuest(player.getPlayerID());
 	            	player.getActiveQuest()[0] = null;
 	            }
 	            	
 	        }
 		}
+	}
+	
+	private void enableQuestComplete(boolean enable) {
+		questCompleteScreen.setActive(enable);
+		questCompleteOkImage.setActive(enable);
+		questFailedScreen.setActive(!enable);
+		questFailedOkImage.setActive(!enable);
 	}
 }

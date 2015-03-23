@@ -35,12 +35,16 @@ public class BarberShop extends GameObject {
 	
 	Background town;
 	Rectangle questBox, notesBox, exitBox;
-	Rectangle exitPopUpYesButtonRectangle, exitPopUpNoButtonRectangle,submitButtonRectangle;
+	Rectangle exitPopUpYesButtonRectangle, exitPopUpNoButtonRectangle,submitButtonRectangle, okButtonRectangle;
 	Rectangle profileButtonRectangle, questButtonRectangle, notesButtonRectangle,referenceButtonRectangle, exitButtonRectangle, questBoardRectangle;
+	Rectangle questCompleteOkRectangle, questFailedOkRectangle;
+	
 	BufferedImage questButton, questButtonHighlight, notesButton, notesButtonHighlight,exitButton, exitButtonHighlight,submitButton,submitButtonHighlight;
 	BufferedImage questPopUp, notesPopUp,exitPopUp,dialogueBox;
 	BufferedImage exitPopUpYesButton, exitPopUpNoButton, exitPopUpNoButtonHighlight, exitPopUpYesButtonHighlight;
-	Sprite questScreen, notesScreen, exitScreen,uiTray,dialogueTray,submitButtonImage;
+	BufferedImage questCompleteOk, questCompleteOkHighlight, questFailedOk, questFailedOkHighlight,questCompletePopUp,questFailedPopUp;
+	Sprite questCompleteOkImage, questFailedOkImage;
+	Sprite questScreen, notesScreen, exitScreen,uiTray,dialogueTray,submitButtonImage,questCompleteScreen, questFailedScreen;
 	Sprite questExit,notesExit, exitYes, exitNo;
 	Sprite quest,notes,exit;
 	
@@ -112,6 +116,24 @@ public class BarberShop extends GameObject {
 		notesScreenExit = new TButton("X", 689, 105, 30, 30);
 		frame.add(notesScreenExit);
 		notesScreenExit.setVisible(false);
+
+		questCompletePopUp = getImage("images/PopUpWindow_QuestComplete.png");
+		questCompleteScreen = new Sprite(questCompletePopUp, 300,300);
+		questCompleteScreen.setActive(false);
+		questCompleteOk = getImage("images/Button_Ok_Neutral.png");
+		questCompleteOkHighlight = getImage("images/Button_Ok_Clicked.png");
+		questCompleteOkImage = new Sprite(questCompleteOk, 467,394);
+		questCompleteOkImage.setActive(false);
+		questCompleteOkRectangle = new Rectangle(467,394,174,60);
+		
+		questFailedPopUp = getImage("images/PopUpWindow_QuestFailed.png");
+		questFailedScreen = new Sprite(questFailedPopUp,300,300);
+		questFailedScreen.setActive(false);
+		questFailedOk = getImage("images/Button_Ok_Clicked.png");
+		questFailedOkHighlight = getImage("images/Button_Ok_Neutral.png");
+		questFailedOkImage = new Sprite(questFailedOk, 467,394);
+		questFailedOkImage.setActive(false);
+		questFailedOkRectangle = new Rectangle(467,394,174,60);
 		
 		exitPopUp = getImage("images/PopupWindow_LogOut.png");
 		exitScreen = new Sprite(exitPopUp,100,0);
@@ -174,6 +196,7 @@ public class BarberShop extends GameObject {
 		exit.update(elapsedTime);
 		
 		highlightButton();
+		highlightOkButton();
 		popUp();
 		UI_POPUPS.update(elapsedTime);
 		PLAYER.update(elapsedTime);
@@ -197,7 +220,31 @@ public class BarberShop extends GameObject {
 		
 		
 	}
+	
+	private void highlightOkButton()
+	{
+		Point p = new Point (getMouseX(), getMouseY());
+		if(questCompleteOkRectangle.contains(p) && questCompleteOkImage.isActive())
+        {
+        	questCompleteOkImage.setImage(questCompleteOkHighlight);
+        	questFailedOkImage.setImage(questFailedOk);
+        	
+        }
+        else if(questFailedOkRectangle.contains(p) && questFailedOkImage.isActive())
+        {
+        	questFailedOkImage.setImage(questFailedOkHighlight);
+        	questCompleteOkImage.setImage(questCompleteOk);
 
+        }
+        else
+        {
+        	questFailedOkImage.setImage(questFailedOk);
+        	questCompleteOkImage.setImage(questCompleteOk);
+
+        
+        }
+	}
+	
 	private void highlightButton() {
 		Point p = new Point (getMouseX(), getMouseY());
         if(questButtonRectangle.contains(p))
@@ -223,7 +270,7 @@ public class BarberShop extends GameObject {
         	exitYes.setImage(exitPopUpYesButton);
         
         }
-        else if(submitButtonRectangle.contains(p))
+        else if(submitButtonRectangle.contains(p) && submitButtonImage.isActive())
         {
         	submitButtonImage.setImage(submitButtonHighlight);
         }
@@ -245,6 +292,7 @@ public class BarberShop extends GameObject {
 	            if(quest.getImage().equals(questButtonHighlight))
 	            {
 	            	questScreen.setActive(true);
+	            	submitButtonImage.setActive(true);
 	            	enableOrDisableMap(false);
 	            	
 	            }
@@ -260,8 +308,19 @@ public class BarberShop extends GameObject {
 					exitNo.setActive(true);
 	            	enableOrDisableMap(false);
 	            }
-			
-				if(exitNo.getImage().equals(exitPopUpNoButtonHighlight))
+	            if(questCompleteOkImage.getImage().equals(questCompleteOkHighlight))
+	            {
+	            	questCompleteScreen.setActive(false);
+	            	questCompleteOkImage.setActive(false);
+	            	
+	            }
+	            if(questFailedOkImage.getImage().equals(questFailedOkHighlight))
+	            {
+	            	questFailedScreen.setActive(false);
+	            	questFailedOkImage.setActive(false);
+	            	
+	            }
+				if(exitNo.getImage().equals(exitPopUpNoButtonHighlight) && exitNo.isActive())
 				{
 					exitScreen.setActive(false);
 					exitYes.setActive(false);
@@ -283,6 +342,7 @@ public class BarberShop extends GameObject {
 			questScreen.setActive(false);
 			questScreenExit.setVisible(false);
 			enableOrDisableMap(true);
+			submitButtonImage.setActive(false);
 			answer.setText("answer");
 			
 		}
@@ -305,6 +365,7 @@ public class BarberShop extends GameObject {
 		if (questScreen.isActive())
 		{
 			questScreenExit.setVisible(true);
+			
 			questScreenExit.render(g);
 			questScreen.render(g);
 			answer.render(g);
@@ -325,6 +386,18 @@ public class BarberShop extends GameObject {
 			dialogueTray.render(g);
 			//text.drawString(g, "Cash is 1000 pesos", 280, 600);
 			dialoguePrinter(g, 280, 600);
+		}
+		if (questCompleteScreen.isActive())
+		{
+			questCompleteScreen.render(g);
+			questCompleteOkImage.render(g);
+			enableOrDisableMap(false);
+		}
+		if(questFailedScreen.isActive())
+		{
+			questFailedScreen.render(g);
+			questFailedOkImage.render(g);
+			enableOrDisableMap(false);
 		}
 		if(exitScreen.isActive())
 		{
@@ -362,7 +435,7 @@ public class BarberShop extends GameObject {
 			else if (player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("barber"))
 			{
 				dialogueText.nextLine("According to the manager, this equipment should cost around " +player.getActiveQuest()[0].getQuestInformation().get("equipment").getValue()+"", dialogueBoxWidth-60);
-				player.setPlayerNotes(player.getPlayerNotes()+"According to the manager, this equipment should cost around " +player.getActiveQuest()[0].getQuestInformation().get("equipment").getValue()+"");
+				notesChecker("According to the manager, this equipment should cost around " +player.getActiveQuest()[0].getQuestInformation().get("equipment").getValue()+"");
 			}
 			
 			dialogueTray.setActive(true);
@@ -379,7 +452,7 @@ public class BarberShop extends GameObject {
 			else if (player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("barber"))
 			{
 				dialogueText.nextLine("it's hard to give an estimate of how much this cost, I need to gather more info", dialogueBoxWidth-60);
-				player.setPlayerNotes(player.getPlayerNotes()+"it's hard to give an estimate of how much this cost, I need to gather more info");
+				notesChecker("it's hard to give an estimate of how much this cost, I need to gather more info");
 			}
 			dialogueTray.setActive(true);
 			enableOrDisableMap(false);
@@ -394,7 +467,7 @@ public class BarberShop extends GameObject {
 			else if (player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("barber"))
 			{
 				dialogueText.nextLine(player.getActiveQuest()[0].getNpc().get(0).getDialogue(), dialogueBoxWidth-60);
-				player.setPlayerNotes(player.getPlayerNotes()+player.getActiveQuest()[0].getNpc().get(0).getDialogue());
+				notesChecker(player.getActiveQuest()[0].getNpc().get(0).getDialogue());
 			}
 			dialogueTray.setActive(true);
 			enableOrDisableMap(false);
@@ -408,6 +481,13 @@ public class BarberShop extends GameObject {
 		}
 	}
 	
+	private void notesChecker(String note) {
+		if (!(player.getPlayerNotes().contains(note)))
+		{
+				player.setPlayerNotes(player.getPlayerNotes()+note+".");
+		}
+	}
+	
 	private void enableOrDisableMap(boolean visible)
 	{
 		welcome.setEnabled(visible);
@@ -416,7 +496,7 @@ public class BarberShop extends GameObject {
 		manager.setEnabled(visible);
 		records.setEnabled(visible);
 		answer.setEnabled(!visible);
-		submitButtonImage.setActive(!visible);
+		
 	}
 	
 
@@ -433,12 +513,15 @@ public class BarberShop extends GameObject {
 	{
 		if(click())
 		{
-	        if(submitButtonImage.getImage().equals(submitButtonHighlight) && submitButtonImage.isActive())
+	        if(submitButtonImage.getImage().equals(submitButtonHighlight) && submitButtonImage.isActive() && player.getActiveQuest()[0]!= null)
 	        {
-	            if (answer.getText().toLowerCase().equals(player.getActiveQuest()[0].getAnswer()))
+	            if (answer.getText()!=null && answer.getText().toLowerCase().equals(player.getActiveQuest()[0].getAnswer()))
+
 	            {
 	            	//TODO: show success
 	            	System.out.println("success");
+	            	enableQuestComplete(true);
+	            
 	            	updatePlayerAccount.updateLevel(player.getActiveQuest()[0].getSkillLevel(),player.getPlayerID(),player.getActiveQuest()[0].getSkillID());
 	            	updatePlayerAccount.removeQuest(player.getPlayerID());
 	            	player.getActiveQuest()[0] = null;
@@ -448,6 +531,8 @@ public class BarberShop extends GameObject {
 	            {
 	            	//show failure
 	            	System.out.println("failure");
+	            	enableQuestComplete(false);
+	          
 	            	updatePlayerAccount.removeQuest(player.getPlayerID());
 	            	player.getActiveQuest()[0] = null;
 	            }
@@ -455,8 +540,16 @@ public class BarberShop extends GameObject {
 	        }
 		}
 	}
+	
+	private void enableQuestComplete(boolean enable) {
+		questCompleteScreen.setActive(enable);
+		questCompleteOkImage.setActive(enable);
+		questFailedScreen.setActive(!enable);
+		questFailedOkImage.setActive(!enable);
+	}
 
 }
+
 
 /*string += list[i] + ",";
 sa update dba
