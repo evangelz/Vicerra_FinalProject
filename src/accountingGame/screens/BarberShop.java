@@ -1,11 +1,10 @@
 package accountingGame.screens;
 
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-
 import accountingGame.AccountManager;
 import accountingGame.Session;
 import accountingGame.TextManager;
@@ -17,17 +16,17 @@ import com.golden.gamedev.gui.TButton;
 import com.golden.gamedev.gui.TTextField;
 import com.golden.gamedev.gui.toolkit.FrameWork;
 import com.golden.gamedev.object.Background;
-import com.golden.gamedev.object.GameFont;
 import com.golden.gamedev.object.Sprite;
 import com.golden.gamedev.object.SpriteGroup;
 import com.golden.gamedev.object.background.ImageBackground;
+import com.golden.gamedev.object.font.SystemFont;
 
 public class BarberShop extends GameObject {
 	
 	TextManager dialogueText;
 	private int buttonYPosition=10;
 	private int dialogueBoxWidth;
-	TButton welcome, seats, supplies, manager,records ;
+	TButton welcome, seats, supplies, manager,records,cash ;
 	TButton questScreenExit, questScreenSubmit, notesScreenExit;
 	FrameWork frame;
 	
@@ -38,11 +37,15 @@ public class BarberShop extends GameObject {
 	Rectangle exitPopUpYesButtonRectangle, exitPopUpNoButtonRectangle,submitButtonRectangle, okButtonRectangle;
 	Rectangle profileButtonRectangle, questButtonRectangle, notesButtonRectangle,referenceButtonRectangle, exitButtonRectangle, questBoardRectangle;
 	Rectangle questCompleteOkRectangle, questFailedOkRectangle;
+	Rectangle barberNPCRectangle,recordsRectangle, suppliesRectangle, cashRectangle;
 	
+	BufferedImage barberNPCGlow, barberNPCGlowHighlight, recordsGlow, recordsGlowHighlight, suppliesGlow, suppliesGlowHighlight, cashGlow, cashGlowHighlight;
 	BufferedImage questButton, questButtonHighlight, notesButton, notesButtonHighlight,exitButton, exitButtonHighlight,submitButton,submitButtonHighlight;
 	BufferedImage questPopUp, notesPopUp,exitPopUp,dialogueBox;
 	BufferedImage exitPopUpYesButton, exitPopUpNoButton, exitPopUpNoButtonHighlight, exitPopUpYesButtonHighlight;
 	BufferedImage questCompleteOk, questCompleteOkHighlight, questFailedOk, questFailedOkHighlight,questCompletePopUp,questFailedPopUp;
+	
+	Sprite barberNPCImage, recordsImage, suppliesImage, cashImage;
 	Sprite questCompleteOkImage, questFailedOkImage;
 	Sprite questScreen, notesScreen, exitScreen,uiTray,dialogueTray,submitButtonImage,questCompleteScreen, questFailedScreen;
 	Sprite questExit,notesExit, exitYes, exitNo;
@@ -52,12 +55,12 @@ public class BarberShop extends GameObject {
 	
 	private PlayerSprite player;
 
-	
+	private SpriteGroup GLOW;
 	private SpriteGroup UI_POPUPS;
 	private SpriteGroup PLAYER;
 	private SpriteGroup UI_BUTTONS;
 	
-	private GameFont text;
+	private SystemFont text;
 	
 	public BarberShop(GameEngine gameEngine) {
 		super(gameEngine);
@@ -76,11 +79,13 @@ public class BarberShop extends GameObject {
 		supplies = new TButton("supplies",450,431, 128,151);
 		manager = new TButton("manager",279,471, 53,171);
 		records = new TButton("records",342,470, 59,60);
+		cash = new TButton("cash",335,528,74,111);
 		frame.add(welcome);
 		frame.add(seats);
 		frame.add(supplies);
 		frame.add(records);
 		frame.add(manager);
+		frame.add(cash);
 		
 		answer = new TTextField("answer",140,500,300,45);
 		frame.add(answer);
@@ -167,6 +172,33 @@ public class BarberShop extends GameObject {
 			e.printStackTrace();
 		}
 		
+		//barberNPCGlow = getImage("images/Barbershop_NPC.png");
+		barberNPCGlowHighlight = getImage("images/Barbershop_NPC.png");
+		barberNPCImage = new Sprite (barberNPCGlow, 271,482);
+		barberNPCRectangle = new Rectangle(271,483,68,172);
+		
+		//recordsGlow = getImage("images/Barbershop_record.png");
+		recordsGlowHighlight = getImage("images/Barbershop_record.png");
+		recordsImage = new Sprite (barberNPCGlow, 339,469);
+		recordsRectangle = new Rectangle(339,469,61,65);
+		
+		//suppliesGlow = getImage("images/Barbershop_Equipment.png");
+		suppliesGlowHighlight = getImage("images/Barbershop_Equipment.png");
+		suppliesImage = new Sprite (barberNPCGlow, 458,395);
+		suppliesRectangle = new Rectangle(458,395,118,187);
+		
+		//cashGlow = getImage("images/Barbershop_Cashbox.png");
+		cashGlowHighlight = getImage("images/Barbershop_Cashbox.png");
+		cashImage = new Sprite (barberNPCGlow, 335,528);
+		cashRectangle = new Rectangle(335,528,74,111);
+		
+		GLOW = new SpriteGroup("glow");
+		
+		GLOW.add(barberNPCImage);
+		GLOW.add(recordsImage);
+		GLOW.add(suppliesImage);
+		GLOW.add(cashImage);
+		
 		UI_BUTTONS = new SpriteGroup("UI");
 		UI_BUTTONS.add(quest);
 		UI_BUTTONS.add(notes);
@@ -182,10 +214,13 @@ public class BarberShop extends GameObject {
 		PLAYER.add(player);
 		PLAYER.setBackground(town);
 		
-		text = fontManager.getFont(getImages("images/smallfont.png", 8, 12),
+		Font plainFont = new Font("Serif", Font.PLAIN, 20);
+		
+		text = new SystemFont(plainFont);
+		/*text = fontManager.getFont(getImages("images/smallfont.png", 8, 12),
                 " !\"#$%&'()*+,-./0123456789:;<=>?" +
                 "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_" +
-                "`abcdefghijklmnopqrstuvwxyz{|}~~");
+                "`abcdefghijklmnopqrstuvwxyz{|}~~");*/
 	}
 	
 	@Override
@@ -198,6 +233,7 @@ public class BarberShop extends GameObject {
 		highlightButton();
 		highlightOkButton();
 		popUp();
+		glowItems();
 		UI_POPUPS.update(elapsedTime);
 		PLAYER.update(elapsedTime);
 		frame.update();
@@ -211,7 +247,9 @@ public class BarberShop extends GameObject {
 	public void render(Graphics2D g) {
 		frame.render(g);
 		town.render(g);
+		GLOW.render(g);
 		uiTray.render(g);
+		
 		//PLAYER.render(g);
 		UI_BUTTONS.render(g);
 		showClosePopUp(g);
@@ -219,6 +257,48 @@ public class BarberShop extends GameObject {
 		
 		
 		
+	}
+	
+	private void glowItems()
+	{
+		Point p = new Point (getMouseX(), getMouseY());
+		if(barberNPCRectangle.contains(p))
+        {
+        	barberNPCImage.setImage(barberNPCGlowHighlight);
+        	recordsImage.setImage(recordsGlow);
+			suppliesImage.setImage(suppliesGlow);
+			cashImage.setImage(cashGlow);
+			
+        }
+		else if(recordsRectangle.contains(p))
+        {
+			recordsImage.setImage(recordsGlowHighlight);
+			barberNPCImage.setImage(barberNPCGlow);
+			suppliesImage.setImage(suppliesGlow);
+			cashImage.setImage(cashGlow);
+        }
+		else if(suppliesRectangle.contains(p))
+		{
+			suppliesImage.setImage(suppliesGlowHighlight);
+			barberNPCImage.setImage(barberNPCGlow);
+			recordsImage.setImage(recordsGlow);
+			cashImage.setImage(cashGlow);
+		}
+		else if(cashRectangle.contains(p))
+		{
+			cashImage.setImage(cashGlowHighlight);
+			barberNPCImage.setImage(barberNPCGlow);
+			recordsImage.setImage(recordsGlow);
+			suppliesImage.setImage(suppliesGlow);
+		
+		}
+		else
+		{
+			barberNPCImage.setImage(barberNPCGlow);
+			recordsImage.setImage(recordsGlow);
+			suppliesImage.setImage(suppliesGlow);
+			cashImage.setImage(cashGlow);
+		}
 	}
 	
 	private void highlightOkButton()
@@ -377,7 +457,7 @@ public class BarberShop extends GameObject {
 			notesScreenExit.setVisible(true);
 			notesScreenExit.render(g);
 			notesScreen.render(g);
-			dialogueText.nextLine(player.getPlayerNotes(), 370);
+			dialogueText.nextLine(player.getPlayerNotes(), 360);
 			dialoguePrinter(g,350,200);
 			
 		}
@@ -434,8 +514,24 @@ public class BarberShop extends GameObject {
 			}
 			else if (player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("barber"))
 			{
-				dialogueText.nextLine("According to the manager, this equipment should cost around " +player.getActiveQuest()[0].getQuestInformation().get("equipment").getValue()+"", dialogueBoxWidth-60);
-				notesChecker("According to the manager, this equipment should cost around " +player.getActiveQuest()[0].getQuestInformation().get("equipment").getValue()+"");
+				dialogueText.nextLine(player.getActiveQuest()[0].getQuestInformation().get("equipment").getValue(), dialogueBoxWidth-60);
+				notesChecker(player.getActiveQuest()[0].getQuestInformation().get("equipment").getValue()+"");
+			}
+			
+			dialogueTray.setActive(true);
+			enableOrDisableMap(false);
+
+		}
+		if(cash.isMousePressed())
+		{
+			if (player.getActiveQuest()[0]==null  || !(player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("barber")))
+			{
+				dialogueText.nextLine("Never knew cutting hair could earn so much money",dialogueBoxWidth-60);
+			}
+			else if (player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("barber"))
+			{
+				dialogueText.nextLine(player.getActiveQuest()[0].getQuestInformation().get("cash").getValue(), dialogueBoxWidth-60);
+				notesChecker(player.getActiveQuest()[0].getQuestInformation().get("cash").getValue()+"");
 			}
 			
 			dialogueTray.setActive(true);
@@ -451,8 +547,8 @@ public class BarberShop extends GameObject {
 			}
 			else if (player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("barber"))
 			{
-				dialogueText.nextLine("it's hard to give an estimate of how much this cost, I need to gather more info", dialogueBoxWidth-60);
-				notesChecker("it's hard to give an estimate of how much this cost, I need to gather more info");
+				dialogueText.nextLine(player.getActiveQuest()[0].getQuestInformation().get("equipment").getValue(), dialogueBoxWidth-60);
+				notesChecker(player.getActiveQuest()[0].getQuestInformation().get("equipment").getValue());
 			}
 			dialogueTray.setActive(true);
 			enableOrDisableMap(false);
@@ -475,7 +571,15 @@ public class BarberShop extends GameObject {
 		}
 		if(records.isMousePressed())
 		{
-			dialogueText.nextLine("Better not touch it ",dialogueBoxWidth-60);
+			if (player.getActiveQuest()[0]==null  || !(player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("barber")))
+			{
+				dialogueText.nextLine("Private records of Mr Barber, I better get permission to view it", dialogueBoxWidth-60);
+			}
+			else if (player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("baker"))
+			{
+				dialogueText.nextLine(player.getActiveQuest()[0].getQuestInformation().get("records").getValue(), dialogueBoxWidth-60);
+				notesChecker(player.getActiveQuest()[0].getQuestInformation().get("records").getValue());
+			}
 			dialogueTray.setActive(true);
 			enableOrDisableMap(false);
 		}
@@ -525,7 +629,7 @@ public class BarberShop extends GameObject {
 	            	updatePlayerAccount.updateLevel(player.getActiveQuest()[0].getSkillLevel(),player.getPlayerID(),player.getActiveQuest()[0].getSkillID());
 	            	updatePlayerAccount.removeQuest(player.getPlayerID());
 	            	player.getActiveQuest()[0] = null;
-	            	
+	            	updatePlayerAccount.updateAccount("",player.getPlayerID());
 	            }
 	            else
 	            {
@@ -535,6 +639,7 @@ public class BarberShop extends GameObject {
 	          
 	            	updatePlayerAccount.removeQuest(player.getPlayerID());
 	            	player.getActiveQuest()[0] = null;
+	            	updatePlayerAccount.updateAccount("",player.getPlayerID());
 	            }
 	            	
 	        }

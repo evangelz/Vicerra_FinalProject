@@ -82,6 +82,37 @@ public class AccountManager {
 		}
 	}
 	
+	public String checkUsernameExist(String playerUsername) {
+		PreparedStatement logIn = null;
+		// Connect to MySQL
+		Connection conn = null;
+		try {
+			conn = this.getConnection();
+			System.out.println("Connected to database");
+		} catch (SQLException e) {
+			System.out.println("ERROR: Could not connect to the database");
+			e.printStackTrace();
+			return null;
+		}
+		try {
+			ResultSet resultSet=null;
+			logIn = conn.prepareStatement("select username from player_account where username = ?");
+			logIn.setString(1,playerUsername);
+			resultSet = logIn.executeQuery();
+			if(resultSet.first())
+			{
+				playerUsername = resultSet.getString("username");
+				return playerUsername;
+			}
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+		
+		
+	}
+	
 	public void createAccount(String playerUsername, String playerPassword) {
 		PreparedStatement signUp = null;
 		// Connect to MySQL
@@ -240,23 +271,18 @@ public class AccountManager {
 				quest.setRequirement(resultSet.getString("quest_requirement"));
 				quest.setQuestStory(resultSet.getString("quest_story"));
 
-				for (int i = 11;i<=24;i++)
+				for (int i = 11;i<=25;i++)
 				{
-					System.out.println(resultSet.getInt(i));
+					System.out.println(resultSet.getString(i));
 
-					if (resultSet.getInt(i)!=0)
+					if (!(resultSet.getString(i).equals("0")))
 					{
 						
 						resultSetMetaData = resultSet.getMetaData();
 						QuestItem questItem = new QuestItem();
-						questItem.setValue(resultSet.getInt(i));
+						questItem.setValue(resultSet.getString(i));
 						quest.getQuestInformation().put(resultSetMetaData.getColumnName(i), questItem);
 					}
-				}
-				if (resultSet.getString("records").equals("y"))
-				{
-					QuestItem records = new QuestItem();
-					records.setRecords(resultSet.getString("records"));
 				}
 				NPC npc = new NPC();
 				npc.setNPCName(resultSet.getString("npc"));

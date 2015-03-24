@@ -90,21 +90,16 @@ public class QuestList {
 				quest.setRequirement(resultSet.getString("quest_requirement"));
 				quest.setQuestStory(resultSet.getString("quest_story"));
 
-				for (int i = 12;i<=25;i++)
+				for (int i = 12;i<=26;i++)
 
 				{
-					if (resultSet.getInt(i)!=0)
+					if (!(resultSet.getString(i).equals("0")))
 					{
 						resultSetMetaData = resultSet.getMetaData();
 						QuestItem questItem = new QuestItem();
-						questItem.setValue(resultSet.getInt(i));
+						questItem.setValue(resultSet.getString(i));
 						quest.getQuestInformation().put(resultSetMetaData.getColumnName(i), questItem);
 					}
-				}
-				if (resultSet.getString("records").equals("y"))
-				{
-					QuestItem records = new QuestItem();
-					records.setRecords(resultSet.getString("records"));
 				}
 				NPC npc = new NPC();
 				npc.setNPCName(resultSet.getString("npc"));

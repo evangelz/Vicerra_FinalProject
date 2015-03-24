@@ -27,7 +27,7 @@ public class MainMenu extends GameObject {
 	Sprite logIn, signUp, exit, userCredentials,signUpScreen,signUpScreenButton;
 	
 	TTextField username,accountUsername;
-	TPasswordField password,accountPassword;
+	TPasswordField password,accountPassword,accountPasswordConfirm;
 	TButton logInButton, signUpButton, exitButton,signUpScreenExit,signUpButtonSmaller;
 	FrameWork frame, userpassField;
 	
@@ -46,17 +46,22 @@ public class MainMenu extends GameObject {
 	public void initResources() {
 		logInButton = new TButton("Log In",90,buttonPositionY, 409,122);
 		signUpButton = new TButton("Sign Up",500,buttonPositionY, 409,122);
-		signUpButtonSmaller = new TButton("Sign Up",400,350,167,50);
+		signUpButtonSmaller = new TButton("Sign Up",400,380,167,50);
 		
 		frame = new FrameWork(bsInput, 1024,780);
 		frame.add(logInButton);
 		frame.add(signUpButton);
 		frame.add(signUpButtonSmaller);
 		
-		accountUsername = new TTextField("",390,218,388,33);
-		accountPassword = new TPasswordField("",390,266,388,33);
+		accountUsername = new TTextField("",475,218,300,33);
+		accountPassword = new TPasswordField("",475,266,300,33);
+		accountPasswordConfirm = new TPasswordField("", 475, 316, 300, 33);
 		accountUsername.setVisible(false);
 		accountPassword.setVisible(false);
+		accountPasswordConfirm.setVisible(false);
+		accountUsername.setEnabled(false);
+		accountPassword.setEnabled(false);
+		accountPasswordConfirm.setEnabled(false);
 		
 		userpassField = new FrameWork(bsInput,500,500);
 		username = new TTextField("",419,256,414,41);
@@ -65,6 +70,7 @@ public class MainMenu extends GameObject {
 		userpassField.add(password);
 		userpassField.add(accountUsername);
 		userpassField.add(accountPassword);
+		userpassField.add(accountPasswordConfirm);
 		
 		background = getImage("images/BlurredBG.png");
 		logInButton1 = getImage("images/Button_LogIn_Neutral.png");
@@ -90,9 +96,9 @@ public class MainMenu extends GameObject {
 		signUpScreenExit.setVisible(false);
 		
 		signUpPopUpButton = getImage("images/PopupWindow_SignUp1.png");
-		signUpScreenButton = new Sprite(signUpPopUpButton,400,350);
+		signUpScreenButton = new Sprite(signUpPopUpButton,400,380);
 		signUpPopUpButtonHighlight =getImage("images/PopupWindow_SignUp2.png");
-		signUpScreenButtonRectangle = new Rectangle(400,350,167,50);
+		signUpScreenButtonRectangle = new Rectangle(400,380,167,50);
 
 		accountManager = new AccountManager();
 		
@@ -169,11 +175,26 @@ public class MainMenu extends GameObject {
             if(signUpButtonSmaller.isMousePressed())
             {
             	System.out.println("ok");
-            	accountManager.createAccount(accountUsername.getText(),org.apache.commons.codec.digest.DigestUtils.sha256Hex(accountPassword.getPasswordText()));
-            	accountManager.checkLogIn(accountUsername.getText(),org.apache.commons.codec.digest.DigestUtils.sha256Hex(accountPassword.getPasswordText()));
-            	accountManager.insertSkill(1, 1);
-            	accountManager.setUserPassMatched(false);
-            	enableOrDisable(false);
+            	if (accountUsername.getText().length()<4 || (accountPassword.getPasswordText().length())<4)
+            	{
+            		System.out.println("lenght error");
+            	}
+            	else if (accountUsername.getText().equals(accountManager.checkUsernameExist(accountUsername.getText())))
+            	{
+            		System.out.println("username exists");
+            	}
+            	else if (!(org.apache.commons.codec.digest.DigestUtils.sha256Hex(accountPassword.getPasswordText()).equals(org.apache.commons.codec.digest.DigestUtils.sha256Hex(accountPasswordConfirm.getPasswordText()))))
+            	{
+            		System.out.println("password not match");
+            	}
+            	else
+            	{
+	            	accountManager.createAccount(accountUsername.getText(),org.apache.commons.codec.digest.DigestUtils.sha256Hex(accountPassword.getPasswordText()));
+	            	accountManager.checkLogIn(accountUsername.getText(),org.apache.commons.codec.digest.DigestUtils.sha256Hex(accountPassword.getPasswordText()));
+	            	accountManager.insertSkill(1, 1);
+	            	accountManager.setUserPassMatched(false);
+	            	enableOrDisable(false);
+            	}
             }
 	}
 	
@@ -206,13 +227,13 @@ public class MainMenu extends GameObject {
 	{
 		if (signUpScreen.isActive())
 		{
-			accountPassword.render(g);
+			signUpButtonSmaller.render(g);
 			signUpScreenExit.render(g);
 			signUpScreen.render(g);
 			signUpScreenButton.render(g);
-			signUpButtonSmaller.render(g);
+			accountPasswordConfirm.render(g);
 			accountUsername.render(g);
-			
+			accountPassword.render(g);
 		}
 		
 	}
@@ -226,11 +247,16 @@ public class MainMenu extends GameObject {
 	
 	private void enableOrDisable(boolean visible)
 	{
+		accountUsername.setEnabled(visible);
+		accountPassword.setEnabled(visible);
+		accountPasswordConfirm.setEnabled(visible);
 		signUpScreen.setActive(visible);
 		accountUsername.setVisible(visible);
 		accountPassword.setVisible(visible);
+		accountPasswordConfirm.setVisible(visible);
 		accountUsername.setText("");
 		accountPassword.setText("");
+		accountPasswordConfirm.setText("");
 		signUpButtonSmaller.setEnabled(visible);
 		signUpScreenExit.setVisible(visible);
 		logInButton.setVisible(!visible);

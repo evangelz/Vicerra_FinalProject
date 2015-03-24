@@ -1,5 +1,6 @@
 package accountingGame.screens;
 
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -21,6 +22,7 @@ import com.golden.gamedev.object.GameFont;
 import com.golden.gamedev.object.Sprite;
 import com.golden.gamedev.object.SpriteGroup;
 import com.golden.gamedev.object.background.ImageBackground;
+import com.golden.gamedev.object.font.SystemFont;
 
 public class World extends GameObject {
 	
@@ -29,8 +31,8 @@ public class World extends GameObject {
 	private int questSlotXPosition= 540;
 	private int questSlotYPosition=170;
 	private int questTitleXPosition = 670;
-	private int questTitleYPosition = 185;
-	private int questRequirementYPosition=210;
+	private int questTitleYPosition = 175;
+	private int questRequirementYPosition=200;
 	private AccountManager updatePlayerAccount;
 	
 	TButton bakery, barbershop, supermarket, questBoard, house;
@@ -40,6 +42,7 @@ public class World extends GameObject {
 	TTextField answer;
 	
 	Background town;
+	Rectangle questBoardGlowRectangle,bakeryGlowRectangle,barberShopGlowRectangle,superMarketGlowRectangle;
 	Rectangle questBox, notesBox, exitBox;
 	Rectangle exitPopUpYesButtonRectangle, exitPopUpNoButtonRectangle,submitButtonRectangle, okButtonRectangle;
 	Rectangle profileButtonRectangle, questButtonRectangle, notesButtonRectangle,referenceButtonRectangle, exitButtonRectangle, questBoardRectangle;
@@ -51,13 +54,18 @@ public class World extends GameObject {
 	BufferedImage questSlot1, questSlot2, questSlot3,questSlot4, questSlot1Highlight, questSlot2Highlight, questSlot3Highlight,questSlot4Highlight;
 	BufferedImage exitPopUpYesButton, exitPopUpNoButton, exitPopUpNoButtonHighlight, exitPopUpYesButtonHighlight;
 	BufferedImage questCompleteOk, questCompleteOkHighlight, questFailedOk, questFailedOkHighlight;
+	BufferedImage questBoardGlow, questBoardGlowHighlight,bakeryGlow,bakeryGlowHighlight, barberShopGlow, barberShopGlowHighlight,superMarketGlow, superMarketGlowHighlight;
+	
+	
+	
+	Sprite questBoardGlowImage,bakeryGlowImage,barberShopGlowImage, superMarketGlowImage;
 	Sprite questCompleteOkImage, questFailedOkImage;
 	Sprite questSlot1Image,questSlot2Image,questSlot3Image,questSlot4Image, questSlot1ImageHighlight,questSlot2ImageHighlight,questSlot3ImageHighlight,questSlot4ImageHighlight;
 	Sprite questScreen, notesScreen, exitScreen,uiTray, questBoardScreen,submitButtonImage, questErrorScreen,okButtonImage,questCompleteScreen, questFailedScreen;
 	Sprite notesExit, exitYes, exitNo;
 	Sprite quest,notes,exit;
 	
-	private GameFont text;
+	private SystemFont text;
 	boolean willPrint;
 	private PlayerSprite player;
 
@@ -65,6 +73,7 @@ public class World extends GameObject {
 	private SpriteGroup UI_POPUPS;
 	private SpriteGroup PLAYER;
 	private SpriteGroup UI_BUTTONS;
+	private SpriteGroup GLOW;
 	
 	private QuestList questList;
 	
@@ -203,6 +212,25 @@ public class World extends GameObject {
 		submitButtonRectangle = new Rectangle(185,562,201,60);
 		submitButtonImage.setActive(false);
 		
+		//questBoardGlow = getImage("images/BulletinBoard.png");
+		questBoardGlowHighlight = getImage("images/BulletinBoard.png");
+		questBoardGlowImage = new Sprite (questBoardGlow, 427,354);
+		questBoardGlowRectangle = new Rectangle(427,354,93,81);
+		
+		//bakeryGlow =getImage("images/Bakery.png");
+		bakeryGlowHighlight = getImage("images/Bakery.png");
+		bakeryGlowImage = new Sprite(bakeryGlow, 170,492);
+		bakeryGlowRectangle = new Rectangle(170,492,124,134);
+		
+		//barberShopGlow =getImage("images/Barbershop.png");
+		barberShopGlowHighlight = getImage("images/Barbershop.png");
+		barberShopGlowImage = new Sprite(barberShopGlow, 803,483);
+		barberShopGlowRectangle = new Rectangle(803,483,129,157);
+		
+		//superMarketGlow =getImage("images/Supermarket.png");
+		superMarketGlowHighlight = getImage("images/Supermarket.png");
+		superMarketGlowImage = new Sprite(superMarketGlow, 644,82);
+		superMarketGlowRectangle = new Rectangle(644,82,206,208);
 		
 		try {
 			player = Session.getCurrentPlayer();
@@ -211,7 +239,11 @@ public class World extends GameObject {
 			e.printStackTrace();
 		}
 		
-		
+		GLOW = new SpriteGroup("glow");
+		GLOW.add(questBoardGlowImage);
+		GLOW.add(bakeryGlowImage);
+		GLOW.add(barberShopGlowImage);
+		GLOW.add(superMarketGlowImage);
 		
 		UI_BUTTONS = new SpriteGroup("UI");
 		UI_BUTTONS.add(quest);
@@ -228,10 +260,14 @@ public class World extends GameObject {
 		PLAYER.add(player);
 		PLAYER.setBackground(town);
 		
-		text = fontManager.getFont(getImages("images/smallfont.png", 8, 12),
+		Font plainFont = new Font("Serif", Font.PLAIN, 20);
+		
+		text = new SystemFont(plainFont);
+		
+		/*text = fontManager.getFont(getImages("images/smallfont.png", 8, 12),
                 " !\"#$%&'()*+,-./0123456789:;<=>?" +
                 "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_" +
-                "`abcdefghijklmnopqrstuvwxyz{|}~~");
+                "`abcdefghijklmnopqrstuvwxyz{|}~~");*/
 		
 		questList = new QuestList();
 		questList.run(player.getPlayerID());
@@ -246,9 +282,11 @@ public class World extends GameObject {
 		highlightButton();
 		highlightQuestSlot();
 		highlightOkButton();
+		glowTown();
 		popUp();
 		UI_POPUPS.update(elapsedTime);
 		PLAYER.update(elapsedTime);
+		GLOW.update(elapsedTime);
 		frame.update();
 		moveTo();
 		town.setToCenter(player);
@@ -263,6 +301,7 @@ public class World extends GameObject {
 	public void render(Graphics2D g) {
 		frame.render(g);
 		town.render(g);
+		GLOW.render(g);
 		uiTray.render(g);
 		PLAYER.render(g);
 		UI_BUTTONS.render(g);
@@ -271,6 +310,34 @@ public class World extends GameObject {
 		submitAnswer();
 	}
 	
+	private void glowTown()
+	{
+		Point p = new Point (getMouseX(), getMouseY());
+		if(questBoardGlowRectangle.contains(p))
+        {
+        	questBoardGlowImage.setImage(questBoardGlowHighlight);
+			
+        }
+		else if(bakeryGlowRectangle.contains(p))
+        {
+			bakeryGlowImage.setImage(bakeryGlowHighlight);
+        }
+		else if(barberShopGlowRectangle.contains(p))
+		{
+			barberShopGlowImage.setImage(barberShopGlowHighlight);
+		}
+		else if(superMarketGlowRectangle.contains(p))
+		{
+			superMarketGlowImage.setImage(superMarketGlowHighlight);
+		}
+		else
+		{
+			questBoardGlowImage.setImage(questBoardGlow);
+			bakeryGlowImage.setImage(bakeryGlow);
+			barberShopGlowImage.setImage(barberShopGlow);
+			superMarketGlowImage.setImage(superMarketGlow);
+		}
+	}
 	private void highlightOkButton()
 	{
 		Point p = new Point (getMouseX(), getMouseY());
@@ -531,12 +598,13 @@ public class World extends GameObject {
 			notesScreenExit.setVisible(true);
 			notesScreenExit.render(g);
 			notesScreen.render(g);
-			dialogueText.nextLine(player.getPlayerNotes(), 370);
+			dialogueText.nextLine(player.getPlayerNotes(), 360);
 			dialoguePrinter(g,350,200);
 		}
 		if(questBoardScreen.isActive())
 		{
 			enableOrDisableMap(false);
+			enableQuestSlot(true);
 			questBoardExit.setVisible(true);
 			questBoardExit.render(g);
 			questBoardScreen.render(g);
@@ -552,13 +620,13 @@ public class World extends GameObject {
 			dialoguePrinter(g,questTitleXPosition,questTitleYPosition+226);		
 			dialogueText.nextLine(questList.getAvailableQuestList().get(3).getQuestTitle(),200);
 			dialoguePrinter(g,questTitleXPosition,questTitleYPosition+339);
-			dialogueText.nextLine(questList.getAvailableQuestList().get(0).getRequirement(), 349);
+			dialogueText.nextLine(questList.getAvailableQuestList().get(0).getRequirement(), 335);
 			dialoguePrinter(g,questSlotXPosition+15,questRequirementYPosition);
-			dialogueText.nextLine(questList.getAvailableQuestList().get(1).getRequirement(), 349);
+			dialogueText.nextLine(questList.getAvailableQuestList().get(1).getRequirement(), 335);
 			dialoguePrinter(g,questSlotXPosition+15,questRequirementYPosition+113);	
-			dialogueText.nextLine(questList.getAvailableQuestList().get(2).getRequirement(), 349);
+			dialogueText.nextLine(questList.getAvailableQuestList().get(2).getRequirement(), 335);
 			dialoguePrinter(g,questSlotXPosition+15,questRequirementYPosition+226);	
-			dialogueText.nextLine(questList.getAvailableQuestList().get(3).getRequirement(), 349);
+			dialogueText.nextLine(questList.getAvailableQuestList().get(3).getRequirement(), 335);
 			dialoguePrinter(g,questSlotXPosition+15,questRequirementYPosition+339);	
 			
 		}
@@ -600,7 +668,7 @@ public class World extends GameObject {
 	private void dialoguePrinter(Graphics2D g, int x, int y) {
 		for (int i=0;i<dialogueText.getDialogueText().size();i++)
 		{
-			text.drawString(g,dialogueText.getDialogueText().get(i) , x, y+i*15);
+			text.drawString(g,dialogueText.getDialogueText().get(i) , x, y+i*20);
 		}
 	}
 
@@ -670,6 +738,7 @@ public class World extends GameObject {
 	            	updatePlayerAccount.updateLevel(player.getActiveQuest()[0].getSkillLevel()+1,player.getPlayerID(),player.getActiveQuest()[0].getSkillID());
 	            	updatePlayerAccount.removeQuest(player.getPlayerID());
 	            	player.getActiveQuest()[0] = null;
+	            	updatePlayerAccount.updateAccount("",player.getPlayerID());
 	            	
 	            }
 	            else
@@ -680,6 +749,7 @@ public class World extends GameObject {
 	            	enableQuestSlot(false);
 	            	updatePlayerAccount.removeQuest(player.getPlayerID());
 	            	player.getActiveQuest()[0] = null;
+	            	updatePlayerAccount.updateAccount("",player.getPlayerID());
 	            }
 	            	
 	        }

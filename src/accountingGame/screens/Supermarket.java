@@ -1,5 +1,6 @@
 package accountingGame.screens;
 
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -21,6 +22,7 @@ import com.golden.gamedev.object.GameFont;
 import com.golden.gamedev.object.Sprite;
 import com.golden.gamedev.object.SpriteGroup;
 import com.golden.gamedev.object.background.ImageBackground;
+import com.golden.gamedev.object.font.SystemFont;
 
 public class Supermarket extends GameObject {
 	
@@ -38,11 +40,15 @@ public class Supermarket extends GameObject {
 	Rectangle exitPopUpYesButtonRectangle, exitPopUpNoButtonRectangle,submitButtonRectangle, okButtonRectangle;
 	Rectangle profileButtonRectangle, questButtonRectangle, notesButtonRectangle,referenceButtonRectangle, exitButtonRectangle, questBoardRectangle;
 	Rectangle questCompleteOkRectangle, questFailedOkRectangle;
-	
+	Rectangle supaNPCRectangle,recordsRectangle, inventoryRectangle,inventoryRectangle1, cashRectangle;
+
+	BufferedImage supaNPCGlow, supaNPCGlowHighlight, recordsGlow, recordsGlowHighlight, inventoryGlow, inventoryGlowHighlight,inventoryGlow1, inventoryGlowHighlight1, cashGlow, cashGlowHighlight;
 	BufferedImage questButton, questButtonHighlight, notesButton, notesButtonHighlight,exitButton, exitButtonHighlight,submitButton,submitButtonHighlight;
 	BufferedImage questPopUp, notesPopUp,exitPopUp,dialogueBox;
 	BufferedImage exitPopUpYesButton, exitPopUpNoButton, exitPopUpNoButtonHighlight, exitPopUpYesButtonHighlight;
 	BufferedImage questCompleteOk, questCompleteOkHighlight, questFailedOk, questFailedOkHighlight,questCompletePopUp,questFailedPopUp;
+	
+	Sprite supaNPCImage, recordsImage, inventoryImage,inventoryImage1, cashImage;
 	Sprite questCompleteOkImage, questFailedOkImage;
 	Sprite questScreen, notesScreen, exitScreen,uiTray,dialogueTray,submitButtonImage,questCompleteScreen, questFailedScreen;
 	Sprite questExit,notesExit, exitYes, exitNo;
@@ -52,11 +58,12 @@ public class Supermarket extends GameObject {
 	
 	private PlayerSprite player;
 
+	private SpriteGroup GLOW;
 	private SpriteGroup UI_POPUPS;
 	private SpriteGroup PLAYER;
 	private SpriteGroup UI_BUTTONS;
 	
-	private GameFont text;
+	private SystemFont text;
 	
 	public Supermarket(GameEngine gameEngine) {
 		super(gameEngine);
@@ -89,6 +96,7 @@ public class Supermarket extends GameObject {
 		answer = new TTextField("answer",140,500,300,45);
 		frame.add(answer);
 		answer.setEnabled(false);
+		answer.setVisible(false);
 		town = new ImageBackground(getImage("images/SuperMarket_Inside1.png"));
 		
 		uiTray = new Sprite(getImage("images/UITray1.png"),0,0);
@@ -162,7 +170,7 @@ public class Supermarket extends GameObject {
 		submitButtonRectangle = new Rectangle(185,562,201,60);
 		submitButtonImage.setActive(false);
 		
-
+		
 		
 		try {
 			player = Session.getCurrentPlayer();
@@ -170,7 +178,34 @@ public class Supermarket extends GameObject {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
+		
+		//barberNPCGlow = getImage("images/Barbershop_NPC.png");
+		supaNPCGlowHighlight = getImage("images/Supermarket_NPC.png");
+		supaNPCImage = new Sprite (supaNPCGlow, 462,415);
+		supaNPCRectangle = new Rectangle(462,415,65,166);
+				
+		//recordsGlow = getImage("images/Barbershop_record.png");
+		recordsGlowHighlight = getImage("images/supamartrecord_glow.png");
+		recordsImage = new Sprite (recordsGlow, 399,507);
+		recordsRectangle = new Rectangle(399,507,54,34);
+				
+		//suppliesGlow = getImage("images/Barbershop_Equipment.png");
+		inventoryGlowHighlight = getImage("images/SuperMarket_Inventory.png");
+		inventoryImage = new Sprite (inventoryGlow, 176,243);
+		inventoryRectangle = new Rectangle(176,243,336,163);
+		
+		//suppliesGlow = getImage("images/Barbershop_Equipment.png");
+		inventoryGlowHighlight1 = getImage("images/SuperMarket_Inventory1.png");
+		inventoryImage1 = new Sprite (inventoryGlow, 612,239);
+		inventoryRectangle1 = new Rectangle(612,239,346,170);
+		
+		
+		GLOW = new SpriteGroup("glow");
+		
+		GLOW.add(supaNPCImage);
+		GLOW.add(recordsImage);
+		GLOW.add(inventoryImage);
+		GLOW.add(inventoryImage1);
 		
 		UI_BUTTONS = new SpriteGroup("UI");
 		UI_BUTTONS.add(quest);
@@ -187,10 +222,13 @@ public class Supermarket extends GameObject {
 		PLAYER.add(player);
 		PLAYER.setBackground(town);
 		
-		text = fontManager.getFont(getImages("images/smallfont.png", 8, 12),
+		Font plainFont = new Font("Serif", Font.PLAIN, 20);
+		
+		text = new SystemFont(plainFont);
+		/*text = fontManager.getFont(getImages("images/smallfont.png", 8, 12),
                 " !\"#$%&'()*+,-./0123456789:;<=>?" +
                 "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_" +
-                "`abcdefghijklmnopqrstuvwxyz{|}~~");
+                "`abcdefghijklmnopqrstuvwxyz{|}~~");*/
 		
 	}
 	
@@ -200,6 +238,7 @@ public class Supermarket extends GameObject {
 		quest.update(elapsedTime);
 		notes.update(elapsedTime);
 		exit.update(elapsedTime);
+		glowItems();
 		highlightButton();
 		highlightOkButton();
 		popUp();
@@ -216,6 +255,7 @@ public class Supermarket extends GameObject {
 	public void render(Graphics2D g) {
 		frame.render(g);
 		town.render(g);
+		GLOW.render(g);
 		uiTray.render(g);
 		//PLAYER.render(g);
 		UI_BUTTONS.render(g);
@@ -224,6 +264,49 @@ public class Supermarket extends GameObject {
 		
 		
 		
+	}
+	
+	private void glowItems()
+	{
+		Point p = new Point (getMouseX(), getMouseY());
+		if(supaNPCRectangle.contains(p))
+        {
+        	supaNPCImage.setImage(supaNPCGlowHighlight);
+        	recordsImage.setImage(recordsGlow);
+			inventoryImage.setImage(inventoryGlow);
+			inventoryImage1.setImage(inventoryGlow1);
+			
+        }
+		else if(recordsRectangle.contains(p))
+        {
+			recordsImage.setImage(recordsGlowHighlight);
+			supaNPCImage.setImage(supaNPCGlow);
+			inventoryImage.setImage(inventoryGlow);
+			inventoryImage1.setImage(inventoryGlow1);
+        }
+		else if(inventoryRectangle.contains(p))
+		{
+			
+			supaNPCImage.setImage(supaNPCGlow);
+			inventoryImage.setImage(inventoryGlowHighlight);
+			inventoryImage1.setImage(inventoryGlow1);
+			recordsImage.setImage(recordsGlow);
+		}
+		else if(inventoryRectangle1.contains(p))
+		{
+			supaNPCImage.setImage(supaNPCGlow);
+			inventoryImage.setImage(inventoryGlow);
+			inventoryImage1.setImage(inventoryGlowHighlight1);
+			recordsImage.setImage(recordsGlow);
+		
+		}
+		else
+		{
+			supaNPCImage.setImage(supaNPCGlow);
+			inventoryImage.setImage(inventoryGlow);
+			inventoryImage1.setImage(inventoryGlow1);
+			recordsImage.setImage(recordsGlow);
+		}
 	}
 	
 	private void highlightOkButton()
@@ -382,7 +465,7 @@ public class Supermarket extends GameObject {
 			notesScreenExit.setVisible(true);
 			notesScreenExit.render(g);
 			notesScreen.render(g);
-			dialogueText.nextLine(player.getPlayerNotes(), 370);
+			dialogueText.nextLine(player.getPlayerNotes(), 360);
 			dialoguePrinter(g,350,200);
 			
 		}
@@ -451,14 +534,14 @@ public class Supermarket extends GameObject {
 			
 			if (player.getActiveQuest()[0]==null  || !(player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("supermarket")))
 			{
-				dialogueText.nextLine("I better buy some eggs for breakfast tomorrow",dialogueBoxWidth-60);
+				dialogueText.nextLine("Welcome, if you need anything don't hesitate to ask",dialogueBoxWidth-60);
 			}
 			else if (player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("supermarket"))
 			{
-				dialogueText.nextLine("You're here to do the request? talk to the May for more information ", dialogueBoxWidth-60);
-				notesChecker("BoyEmployee: You're here to do the request? talk to the May for more information ");
+				dialogueText.nextLine("I didn't do it, you have to believe me", dialogueBoxWidth-60);
+				notesChecker("I didn't do it, you have to believe me");
 			}
-			dialogueText.nextLine("Welcome, if you need anything don't hesitate to ask",dialogueBoxWidth-60);
+			
 			dialogueTray.setActive(true);
 			enableOrDisableMap(false);
 		}
@@ -494,8 +577,15 @@ public class Supermarket extends GameObject {
 		}
 		if(records.isMousePressed())
 		{
-			//TODO: use hashmap and dialogue
-			dialogueText.nextLine("Better not touch it",dialogueBoxWidth-60);
+			if (player.getActiveQuest()[0]==null  || !(player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("supermarket")))
+			{
+				dialogueText.nextLine("Private records of Supa-Mart, I wonder what's inside", dialogueBoxWidth-60);
+			}
+			else if (player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("supermarket"))
+			{
+				dialogueText.nextLine(player.getActiveQuest()[0].getQuestInformation().get("records").getValue(), dialogueBoxWidth-60);
+				notesChecker(player.getActiveQuest()[0].getQuestInformation().get("records").getValue());
+			}
 			dialogueTray.setActive(true);
 			enableOrDisableMap(false);
 		}
@@ -518,13 +608,14 @@ public class Supermarket extends GameObject {
 		girlEmployee.setEnabled(visible);
 		records.setEnabled(visible);
 		answer.setEnabled(!visible);
+		answer.setVisible(!visible);
 		
 	}
 	
 	private void dialoguePrinter(Graphics2D g, int x, int y) {
 		for (int i=0;i<dialogueText.getDialogueText().size();i++)
 		{
-			text.drawString(g,dialogueText.getDialogueText().get(i) , x, y+i*10);
+			text.drawString(g,dialogueText.getDialogueText().get(i) , x, y+i*20);
 		}
 	}
 	
@@ -544,6 +635,7 @@ public class Supermarket extends GameObject {
 	            	updatePlayerAccount.updateLevel(player.getActiveQuest()[0].getSkillLevel(),player.getPlayerID(),player.getActiveQuest()[0].getSkillID());
 	            	updatePlayerAccount.removeQuest(player.getPlayerID());
 	            	player.getActiveQuest()[0] = null;
+	            	updatePlayerAccount.updateAccount("",player.getPlayerID());
 	            	
 	            }
 	            else
@@ -554,6 +646,7 @@ public class Supermarket extends GameObject {
 	      
 	            	updatePlayerAccount.removeQuest(player.getPlayerID());
 	            	player.getActiveQuest()[0] = null;
+	            	updatePlayerAccount.updateAccount("",player.getPlayerID());
 	            }
 	            	
 	        }

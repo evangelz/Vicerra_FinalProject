@@ -1,5 +1,6 @@
 package accountingGame.screens;
 
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -21,6 +22,7 @@ import com.golden.gamedev.object.GameFont;
 import com.golden.gamedev.object.Sprite;
 import com.golden.gamedev.object.SpriteGroup;
 import com.golden.gamedev.object.background.ImageBackground;
+import com.golden.gamedev.object.font.SystemFont;
 
 public class Bakery extends GameObject {
 	
@@ -38,11 +40,15 @@ public class Bakery extends GameObject {
 	Rectangle exitPopUpYesButtonRectangle, exitPopUpNoButtonRectangle,submitButtonRectangle, okButtonRectangle;
 	Rectangle profileButtonRectangle, questButtonRectangle, notesButtonRectangle,referenceButtonRectangle, exitButtonRectangle, questBoardRectangle;
 	Rectangle questCompleteOkRectangle, questFailedOkRectangle;
+	Rectangle bakeryNPCRectangle,recordsRectangle, inventoryRectangle, cashRectangle;
 	
+	BufferedImage bakeryNPCGlow, bakeryNPCGlowHighlight, recordsGlow, recordsGlowHighlight, inventoryGlow, inventoryGlowHighlight, cashGlow, cashGlowHighlight;
 	BufferedImage questButton, questButtonHighlight, notesButton, notesButtonHighlight,exitButton, exitButtonHighlight,submitButton,submitButtonHighlight;
 	BufferedImage questPopUp, notesPopUp,exitPopUp, dialogueBox;
 	BufferedImage exitPopUpYesButton, exitPopUpNoButton, exitPopUpNoButtonHighlight, exitPopUpYesButtonHighlight;
 	BufferedImage questCompleteOk, questCompleteOkHighlight, questFailedOk, questFailedOkHighlight,questCompletePopUp,questFailedPopUp;
+	
+	Sprite bakeryNPCImage, recordsImage, inventoryImage, cashImage;
 	Sprite questCompleteOkImage, questFailedOkImage;
 	Sprite questScreen, notesScreen, exitScreen,uiTray, dialogueTray,submitButtonImage,questCompleteScreen, questFailedScreen;
 	Sprite questExit,notesExit, exitYes, exitNo;
@@ -52,12 +58,12 @@ public class Bakery extends GameObject {
 
 	private PlayerSprite player;
 
-	
+	private SpriteGroup GLOW;
 	private SpriteGroup UI_POPUPS;
 	private SpriteGroup PLAYER;
 	private SpriteGroup UI_BUTTONS;
 	
-	private GameFont text;
+	private SystemFont text;
 	
 	public Bakery(GameEngine gameEngine) {
 		super(gameEngine);
@@ -167,7 +173,34 @@ public class Bakery extends GameObject {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
+		
+		//barberNPCGlow = getImage("images/Barbershop_NPC.png");
+		bakeryNPCGlowHighlight = getImage("images/Bakery_NPC.png");
+		bakeryNPCImage = new Sprite (bakeryNPCGlow, 644,166);
+		bakeryNPCRectangle = new Rectangle(644,166,69,132);
+			
+		//recordsGlow = getImage("images/Barbershop_record.png");
+		recordsGlowHighlight = getImage("images/Bakery_record.png");
+		recordsImage = new Sprite (recordsGlow, 427,242);
+		recordsRectangle = new Rectangle(427,242,61,65);
+				
+		//suppliesGlow = getImage("images/Barbershop_Equipment.png");
+		inventoryGlowHighlight = getImage("images/Bakery_Inventory.png");
+		inventoryImage = new Sprite (inventoryGlow, 491,257);
+		inventoryRectangle = new Rectangle(491,257,162,207);
+				
+		//cashGlow = getImage("images/Barbershop_Cashbox.png");
+		cashGlowHighlight = getImage("images/Bakery_Cashbox.png");
+		cashImage = new Sprite (cashGlow, 667,275);
+		cashRectangle = new Rectangle(667,275,102,90);
+		
+		
+		GLOW = new SpriteGroup("glow");
+		
+		GLOW.add(bakeryNPCImage);
+		GLOW.add(recordsImage);
+		GLOW.add(inventoryImage);
+		GLOW.add(cashImage);
 		
 		UI_BUTTONS = new SpriteGroup("UI");
 		UI_BUTTONS.add(quest);
@@ -184,10 +217,14 @@ public class Bakery extends GameObject {
 		PLAYER.add(player);
 		PLAYER.setBackground(town);
 		
-		text = fontManager.getFont(getImages("images/smallfont.png", 8, 12),
+		Font plainFont = new Font("Serif", Font.PLAIN, 20);
+		
+		text = new SystemFont(plainFont);
+		
+		/*text = fontManager.getFont(getImages("images/smallfont.png", 8, 12),
                 " !\"#$%&'()*+,-./0123456789:;<=>?" +
                 "@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_" +
-                "`abcdefghijklmnopqrstuvwxyz{|}~~");
+                "`abcdefghijklmnopqrstuvwxyz{|}~~");*/
 		
 	}
 	
@@ -201,6 +238,7 @@ public class Bakery extends GameObject {
 		highlightButton();
 		highlightOkButton();
 		popUp();
+		glowItems();
 		UI_POPUPS.update(elapsedTime);
 		PLAYER.update(elapsedTime);
 		frame.update();
@@ -214,6 +252,7 @@ public class Bakery extends GameObject {
 	public void render(Graphics2D g) {
 		frame.render(g);
 		town.render(g);
+		GLOW.render(g);
 		uiTray.render(g);
 		//PLAYER.render(g);
 		UI_BUTTONS.render(g);
@@ -221,6 +260,48 @@ public class Bakery extends GameObject {
 		
 		
 		
+	}
+	
+	private void glowItems()
+	{
+		Point p = new Point (getMouseX(), getMouseY());
+		if(bakeryNPCRectangle.contains(p))
+        {
+        	bakeryNPCImage.setImage(bakeryNPCGlowHighlight);
+        	recordsImage.setImage(recordsGlow);
+			inventoryImage.setImage(inventoryGlow);
+			cashImage.setImage(cashGlow);
+			
+        }
+		else if(recordsRectangle.contains(p))
+        {
+			recordsImage.setImage(recordsGlowHighlight);
+			bakeryNPCImage.setImage(bakeryNPCGlow);
+			inventoryImage.setImage(inventoryGlow);
+			cashImage.setImage(cashGlow);
+        }
+		else if(inventoryRectangle.contains(p))
+		{
+			inventoryImage.setImage(inventoryGlowHighlight);
+			bakeryNPCImage.setImage(bakeryNPCGlow);
+			recordsImage.setImage(recordsGlow);
+			cashImage.setImage(cashGlow);
+		}
+		else if(cashRectangle.contains(p))
+		{
+			cashImage.setImage(cashGlowHighlight);
+			bakeryNPCImage.setImage(bakeryNPCGlow);
+			recordsImage.setImage(recordsGlow);
+			inventoryImage.setImage(inventoryGlow);
+		
+		}
+		else
+		{
+			bakeryNPCImage.setImage(bakeryNPCGlow);
+			recordsImage.setImage(recordsGlow);
+			inventoryImage.setImage(inventoryGlow);
+			cashImage.setImage(cashGlow);
+		}
 	}
 	
 	private void highlightOkButton()
@@ -376,7 +457,7 @@ public class Bakery extends GameObject {
 			notesScreenExit.setVisible(true);
 			notesScreenExit.render(g);
 			notesScreen.render(g);
-			dialogueText.nextLine(player.getPlayerNotes(), 370);
+			dialogueText.nextLine(player.getPlayerNotes(), 360);
 			dialoguePrinter(g,350,200);
 		
 		}
@@ -431,12 +512,12 @@ public class Bakery extends GameObject {
 			
 			if (player.getActiveQuest()[0] == null  || !(player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("baker")))
 			{
-				dialogueText.nextLine("Maybe I should consider switching careers",dialogueBoxWidth-60);
+				dialogueText.nextLine("So much cash, Maybe I should consider switching careers",dialogueBoxWidth-60);
 			}
 			else if (player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("baker"))
 			{
-				dialogueText.nextLine("The cash register has a total amount of " +player.getActiveQuest()[0].getQuestInformation().get("cash").getValue()+"", dialogueBoxWidth-60);
-				notesChecker("The cash register has a total amount of " +player.getActiveQuest()[0].getQuestInformation().get("cash").getValue()+"");
+				dialogueText.nextLine(player.getActiveQuest()[0].getQuestInformation().get("cash").getValue(), dialogueBoxWidth-60);
+				notesChecker(player.getActiveQuest()[0].getQuestInformation().get("cash").getValue()+"");
 			}
 			
 			dialogueTray.setActive(true);
@@ -450,8 +531,8 @@ public class Bakery extends GameObject {
 			}
 			else if (player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("baker"))
 			{
-				dialogueText.nextLine("So much bread,pastries and cake, If only I have " +player.getActiveQuest()[0].getQuestInformation().get("inventory").getValue()+""+" to buy all of these", dialogueBoxWidth-60);
-				notesChecker("So much bread,pastries and cake, If only I have " +player.getActiveQuest()[0].getQuestInformation().get("inventory").getValue()+""+" to buy all of these");
+				dialogueText.nextLine(player.getActiveQuest()[0].getQuestInformation().get("inventory").getValue(), dialogueBoxWidth-60);
+				notesChecker(player.getActiveQuest()[0].getQuestInformation().get("inventory").getValue());
 			}
 			
 			
@@ -483,8 +564,8 @@ public class Bakery extends GameObject {
 			}
 			else if (player.getActiveQuest()[0].getNpc().get(0).getNPCName().equals("baker"))
 			{
-				dialogueText.nextLine("Mr baker owes the supermarket 5000 pesos", dialogueBoxWidth-60);
-				notesChecker("Mr baker owes the supermarket 5000 pesos");
+				dialogueText.nextLine(player.getActiveQuest()[0].getQuestInformation().get("records").getValue(), dialogueBoxWidth-60);
+				notesChecker(player.getActiveQuest()[0].getQuestInformation().get("records").getValue());
 			}
 			
 			dialogueTray.setActive(true);
@@ -515,7 +596,7 @@ public class Bakery extends GameObject {
 	private void dialoguePrinter(Graphics2D g, int x, int y) {
 		for (int i=0;i<dialogueText.getDialogueText().size();i++)
 		{
-			text.drawString(g,dialogueText.getDialogueText().get(i) , x, y+i*15);
+			text.drawString(g,dialogueText.getDialogueText().get(i) , x, y+i*30);
 		}
 	}
 	
@@ -535,6 +616,7 @@ public class Bakery extends GameObject {
 	            	updatePlayerAccount.updateLevel(player.getActiveQuest()[0].getSkillLevel(),player.getPlayerID(),player.getActiveQuest()[0].getSkillID());
 	            	updatePlayerAccount.removeQuest(player.getPlayerID());
 	            	player.getActiveQuest()[0] = null;
+	            	updatePlayerAccount.updateAccount("",player.getPlayerID());
 	            	
 	            }
 	            else
@@ -545,6 +627,7 @@ public class Bakery extends GameObject {
 	            	
 	            	updatePlayerAccount.removeQuest(player.getPlayerID());
 	            	player.getActiveQuest()[0] = null;
+	            	updatePlayerAccount.updateAccount("",player.getPlayerID());
 	            }
 	            	
 	        }

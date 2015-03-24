@@ -8,7 +8,7 @@ import com.golden.gamedev.object.Sprite;
 public class QuestItem extends Sprite{
 	
 	private boolean interactable =false;
-	private int value;
+	private String value;
 	private String records;
 	private String info;
 	
@@ -18,10 +18,10 @@ public class QuestItem extends Sprite{
 	public void setInteractable(boolean interactable) {
 		this.interactable = interactable;
 	}
-	public int getValue() {
+	public String getValue() {
 		return value;
 	}
-	public void setValue(int value) {
+	public void setValue(String value) {
 		this.value = value;
 	}
 
